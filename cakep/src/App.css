@@ -1,9 +1,71 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* Remove Vite demo constraints */
+#root { max-width: none; padding: 0; text-align: initial; }
+
+/* Global dark helpers already applied via data-bs-theme. Keep smooth transition */
+body.bg-dark {
+  background-color: #1a1a1a !important;
+  color: #e9ecef !important;
+  transition: background-color .25s ease, color .25s ease;
 }
+
+/* Improved dark mode overrides */
+[data-bs-theme="dark"] .bg-light { background-color: #1a1a1a !important; }
+[data-bs-theme="dark"] .bg-white { background-color: #1a1a1a !important; }
+[data-bs-theme="dark"] .text-secondary { color: #adb5bd !important; }
+[data-bs-theme="dark"] .text-dark { color: #e9ecef !important; }
+
+/* Navbar improvements */
+[data-bs-theme="dark"] .navbar-brand { color: #fff !important; }
+[data-bs-theme="dark"] .nav-link { color: #adb5bd !important; }
+[data-bs-theme="dark"] .nav-link:hover { color: #fff !important; }
+
+/* Cards contrast in dark */
+[data-bs-theme="dark"] .card { 
+  background-color: #2d2d2d; 
+  color: #e9ecef; 
+  border-color: #404040; 
+}
+
+/* Modal in dark mode */
+[data-bs-theme="dark"] .modal-content { 
+  background-color: #2d2d2d; 
+  color: #e9ecef; 
+  border-color: #404040; 
+}
+[data-bs-theme="dark"] .modal-header, 
+[data-bs-theme="dark"] .modal-footer { border-color: #404040; }
+
+/* Accordion improvements in dark */
+[data-bs-theme="dark"] .accordion-button { 
+  background-color: #2d2d2d; 
+  color: #e9ecef; 
+  border-color: #404040;
+}
+[data-bs-theme="dark"] .accordion-button:not(.collapsed) { 
+  background-color: #353535; 
+  color: #e9ecef; 
+}
+[data-bs-theme="dark"] .accordion-button::after { filter: invert(1) grayscale(1); }
+[data-bs-theme="dark"] .accordion-item { 
+  background-color: #2d2d2d; 
+  border-color: #404040; 
+}
+[data-bs-theme="dark"] .accordion-body { 
+  background-color: #2d2d2d; 
+  color: #e9ecef; 
+}
+
+/* Headings in dark mode */
+[data-bs-theme="dark"] h1,
+[data-bs-theme="dark"] h2,
+[data-bs-theme="dark"] h3,
+[data-bs-theme="dark"] h4,
+[data-bs-theme="dark"] h5,
+[data-bs-theme="dark"] h6 { color: #f8f9fa; }
+
+/* Outline dark buttons readable in dark mode */
+[data-bs-theme="dark"] .btn-outline-dark { color: #e9ecef; border-color: #e9ecef; }
+[data-bs-theme="dark"] .btn-outline-dark:hover { background-color: #e9ecef; color: #212529; }
 
 .logo {
   height: 6em;
@@ -40,3 +102,48 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Neutral tile for icons/images with white background */
+.icon-badge {
+  background: linear-gradient(180deg, #ffffff, #f1f3f5);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 12px;
+  width: 84px;
+  height: 84px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.icon-badge .icon-img { max-height: 56px; width: auto; }
+.icon-badge-lg { width: 160px; height: 160px; border-radius: 16px; }
+.icon-badge-lg .icon-img { max-height: 120px; }
+
+/* Dark mode variant so tile contrasts but stays neutral */
+[data-bs-theme="dark"] .icon-badge {
+  background: linear-gradient(180deg, #404040, #353535);
+  border-color: rgba(255,255,255,0.1);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+/* Generic tile for larger illustrations with white background */
+.image-tile {
+  background: linear-gradient(180deg, #ffffff, #f8f9fa);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 16px;
+  padding: 12px;
+  display: inline-block;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+[data-bs-theme="dark"] .image-tile {
+  background: linear-gradient(180deg, #404040, #353535);
+  border-color: rgba(255,255,255,0.1);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+
+/* Hero styles */
+.hero-title { color: #2d3436; letter-spacing: 0.3px; }
+.hero-subtitle { color: #00b894; font-weight: 700; }
+
+[data-bs-theme="dark"] .hero-title { color: #f1f3f5; opacity: 0.95; }
+[data-bs-theme="dark"] .hero-subtitle { color: #2dd4bf; }
