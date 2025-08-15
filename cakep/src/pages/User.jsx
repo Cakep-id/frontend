@@ -6,6 +6,8 @@ import BuatLaporan from "../components/user/BuatLaporan";
 import StatusLaporan from "../components/user/StatusLaporan";
 import FooterUser from "../components/user/FooterUser";
 
+import ChatbotUser from "../components/user/ChatbotUser";
+
 // Dummy page untuk contoh, silakan ganti dengan komponen asli nanti
 
 
@@ -21,6 +23,7 @@ const User = () => {
           {/* tambahkan ke sini untuk yang lain */}
         </Routes>
       </div>
+      <ChatbotUser />
       <FooterUser />
     </>
   );
