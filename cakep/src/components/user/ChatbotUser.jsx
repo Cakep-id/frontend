@@ -14,9 +14,21 @@ const ChatbotUser = () => {
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [chatHistory, setChatHistory] = useState([
-    { id: 1, title: "Chat Baru", lastMessage: "Selamat datang di chatbot..." }
+    { 
+      id: 1, 
+      title: "Chat Baru", 
+      lastMessage: "Selamat datang di chatbot...",
+      messages: [
+        {
+          id: 1,
+          from: "bot",
+          text: "Selamat datang di chatbot Cakep.id! Saya adalah asisten AI yang siap membantu Anda dengan berbagai pertanyaan teknis mengenai platform ini. Silahkan tanya apapun yang ingin Anda ketahui!",
+          timestamp: new Date()
+        }
+      ]
+    }
   ]);
   const [currentChatId, setCurrentChatId] = useState(1);
   const messagesEndRef = useRef(null);
@@ -70,9 +82,19 @@ const ChatbotUser = () => {
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, newMessage]);
+    const updatedMessages = [...messages, newMessage];
+    setMessages(updatedMessages);
     setInput("");
     setIsTyping(true);
+
+    // Update chat history with new message
+    setChatHistory(prev => 
+      prev.map(chat => 
+        chat.id === currentChatId 
+          ? { ...chat, messages: updatedMessages, lastMessage: text }
+          : chat
+      )
+    );
 
     // Reset textarea height
     if (textareaRef.current) {
@@ -82,13 +104,25 @@ const ChatbotUser = () => {
     // Simulate AI response
     setTimeout(() => {
       const botResponse = getBotResponse(text);
-      setMessages(prev => [...prev, {
+      const botMessage = {
         id: Date.now() + 1,
         from: "bot",
         text: botResponse,
         timestamp: new Date()
-      }]);
+      };
+      
+      const finalMessages = [...updatedMessages, botMessage];
+      setMessages(finalMessages);
       setIsTyping(false);
+
+      // Update chat history with bot response
+      setChatHistory(prev => 
+        prev.map(chat => 
+          chat.id === currentChatId 
+            ? { ...chat, messages: finalMessages, lastMessage: botResponse.substring(0, 50) + "..." }
+            : chat
+        )
+      );
     }, 1500);
   };
 
@@ -135,29 +169,54 @@ const ChatbotUser = () => {
 
   // Clear chat
   const clearChat = () => {
-    setMessages([{
+    const newMessages = [{
       id: Date.now(),
       from: "bot",
       text: "Chat telah dibersihkan. Bagaimana saya bisa membantu Anda hari ini?",
       timestamp: new Date()
-    }]);
+    }];
+    
+    setMessages(newMessages);
+    
+    // Update chat history
+    setChatHistory(prev => 
+      prev.map(chat => 
+        chat.id === currentChatId 
+          ? { ...chat, messages: newMessages, lastMessage: "Chat telah dibersihkan..." }
+          : chat
+      )
+    );
   };
 
   // New chat
   const newChat = () => {
     const newChatId = Date.now();
-    setChatHistory(prev => [...prev, {
-      id: newChatId,
-      title: "Chat Baru",
-      lastMessage: "Memulai percakapan baru..."
-    }]);
-    setCurrentChatId(newChatId);
-    setMessages([{
+    const initialMessage = {
       id: Date.now(),
       from: "bot",
       text: "Halo! Ini adalah percakapan baru. Bagaimana saya bisa membantu Anda?",
       timestamp: new Date()
-    }]);
+    };
+    
+    const newChatData = {
+      id: newChatId,
+      title: `Chat ${chatHistory.length + 1}`,
+      lastMessage: "Memulai percakapan baru...",
+      messages: [initialMessage]
+    };
+    
+    setChatHistory(prev => [...prev, newChatData]);
+    setCurrentChatId(newChatId);
+    setMessages([initialMessage]);
+  };
+
+  // Switch chat
+  const switchChat = (chatId) => {
+    const selectedChat = chatHistory.find(chat => chat.id === chatId);
+    if (selectedChat) {
+      setCurrentChatId(chatId);
+      setMessages(selectedChat.messages || []);
+    }
   };
 
   const formatTime = (date) => {
@@ -216,12 +275,13 @@ const ChatbotUser = () => {
         >
       {/* Sidebar */}
       <div 
-        className={`${sidebarOpen ? 'd-block' : 'd-none d-md-block'} ${isDark ? 'bg-dark border-secondary' : 'bg-white border-light'}`}
+        className={`${sidebarOpen ? 'd-block' : 'd-none'} ${isDark ? 'bg-dark border-secondary' : 'bg-white border-light'}`}
         style={{ 
           width: "280px", 
           borderRight: "1px solid",
           position: "relative",
-          zIndex: 1000
+          zIndex: 1000,
+          transition: "all 0.3s ease"
         }}
       >
         <div className="p-3 border-bottom">
@@ -246,8 +306,8 @@ const ChatbotUser = () => {
             className="w-100"
             onClick={() => setSidebarOpen(false)}
           >
-            <FaBars className="me-2" />
-            Sembunyikan Menu
+            <FaTimes className="me-2" />
+            Tutup Sidebar
           </Button>
         </div>
 
@@ -263,7 +323,7 @@ const ChatbotUser = () => {
                     : (isDark ? 'bg-secondary bg-opacity-25' : 'bg-light')
                 }`}
                 style={{ cursor: "pointer" }}
-                onClick={() => setCurrentChatId(chat.id)}
+                onClick={() => switchChat(chat.id)}
               >
                 <div className="fw-medium small">{chat.title}</div>
                 <div className="text-muted small text-truncate">
@@ -287,8 +347,8 @@ const ChatbotUser = () => {
               <Button
                 variant="outline-secondary"
                 size="sm"
-                className="d-md-none me-3"
-                onClick={() => setSidebarOpen(true)}
+                className="me-3"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
               >
                 <FaBars />
               </Button>
