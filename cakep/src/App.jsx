@@ -5,6 +5,7 @@ import "./App.css";
 import LandingPage from "./pages/LandingPage";
 import TentangKami from "./pages/TentangKami";
 import Login from "./pages/Login";
+import User from "./pages/User";
 
 function App() {
   useEffect(() => {
@@ -22,6 +23,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/tentang-kami" element={<TentangKami />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/user/*" element={<User />} />
       </Routes>
     </Router>
   );

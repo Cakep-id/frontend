@@ -1,16 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Form, Button, Modal } from "react-bootstrap";
 import { FaUser, FaLock, FaEnvelope, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import factoryLeft from "../assets/login/login.png";
 import factoryRight from "../assets/login/daftar.png";
 
+const getPreferredTheme = () => {
+  const stored = typeof window !== 'undefined' ? localStorage.getItem('theme') : null;
+  if (stored === 'dark' || stored === 'light') return stored;
+  const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return prefersDark ? 'dark' : 'light';
+};
+
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [modalMsg, setModalMsg] = useState("");
   const [modalType, setModalType] = useState(""); // "login" | "signup" | "error"
+  const [theme, setTheme] = useState(getPreferredTheme());
   const navigate = useNavigate();
+
+  // Sync theme with localStorage and system preference
+  useEffect(() => {
+    const stored = localStorage.getItem('theme');
+    if (stored === 'dark' || stored === 'light') setTheme(stored);
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e) => {
+      if (!localStorage.getItem('theme')) setTheme(e.matches ? 'dark' : 'light');
+    };
+    media.addEventListener('change', handler);
+    return () => media.removeEventListener('change', handler);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-bs-theme', theme);
+    document.body.classList.toggle('bg-dark', theme === 'dark');
+    document.body.classList.toggle('text-light', theme === 'dark');
+    document.body.classList.toggle('bg-light', theme === 'light');
+    document.body.classList.toggle('text-dark', theme === 'light');
+  }, [theme]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -42,17 +70,29 @@ const Login = () => {
   };
 
   const bgImage = isSignup ? factoryRight : factoryLeft;
+  const isDark = theme === "dark";
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f5f6f8" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: isDark ? "#23272f" : "#f5f6f8",
+        transition: "background 0.3s"
+      }}
+    >
       <Container className="d-flex justify-content-center">
-        <div className={`auth-card ${isSignup ? "reverse" : ""}`}>
+        <div className={`auth-card ${isSignup ? "reverse" : ""} ${isDark ? "dark" : "light"}`}
+        style={isDark ? { border: "1px solid #fff" } : {}}
+        >
 
           <div
             className="panel image-panel"
             aria-hidden="true"
             style={{
-              backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.36), rgba(0,0,0,0.28)), url(${bgImage})`
+              backgroundImage: `linear-gradient(135deg, rgba(0,0,0,${isDark ? "0.56" : "0.36"}), rgba(0,0,0,${isDark ? "0.48" : "0.28"})), url(${bgImage})`
             }}
           >
             <div className="image-overlay">
@@ -62,7 +102,7 @@ const Login = () => {
                   ? "Buat akun untuk mengakses dashboard CAKEP dan fitur monitoring aset."
                   : "Masuk untuk melihat status aset Anda dan hasil analisis AI."}
               </p>
-              <Button variant="outline-light" onClick={() => setIsSignup((v) => !v)}>
+              <Button variant={isDark ? "outline-light" : "outline-dark"} onClick={() => setIsSignup((v) => !v)}>
                 {isSignup ? "Sudah punya akun? Masuk" : "Belum mendaftar? Daftar"}
               </Button>
             </div>
@@ -109,7 +149,7 @@ const Login = () => {
                   </Form.Group>
                 )}
 
-                <Button type="submit" className="w-100 mb-2">
+                <Button type="submit" className="w-100 mb-2" variant={isDark ? "light" : "primary"}>
                   {isSignup ? "Daftar Sekarang" : "Masuk"}
                 </Button>
 
@@ -145,7 +185,10 @@ const Login = () => {
           <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 10, marginTop: 10 }}>
             {modalMsg}
           </div>
-          <Button variant={modalType === "error" ? "danger" : "success"} onClick={() => setShowModal(false)}>
+          <Button
+            variant={modalType === "error" ? (isDark ? "outline-light" : "danger") : (isDark ? "success" : "primary")}
+            onClick={() => setShowModal(false)}
+          >
             OK
           </Button>
         </Modal.Body>
@@ -162,6 +205,10 @@ const Login = () => {
           overflow: hidden;
           box-shadow: 0 12px 40px rgba(15,15,15,0.12);
           background: #fff;
+          transition: background 0.3s;
+        }
+        .auth-card.dark {
+          background: #23272f;
         }
         .panel {
           flex: 1 1 0;
@@ -190,7 +237,13 @@ const Login = () => {
         }
         .form-panel {
           right: 0;
+          background: transparent;
+        }
+        .auth-card.light .form-panel {
           background: #fff;
+        }
+        .auth-card.dark .form-panel {
+          background: #23272f;
         }
         /* Login mode (default) */
         .auth-card:not(.reverse) .image-panel {
@@ -243,6 +296,7 @@ const Login = () => {
         .input-with-icon .input-icon { position:absolute; left:12px; color:#8a8f98; }
         .input-with-icon .form-control { padding-left:36px; }
         .link-btn { background:none; border:none; color:#0d6efd; padding:0; cursor:pointer; font-weight:600; }
+        .auth-card.dark .link-btn { color: #6cb2ff; }
         /* Modal icon animation */
         .modal-icon-anim {
           margin-bottom: 10px;
