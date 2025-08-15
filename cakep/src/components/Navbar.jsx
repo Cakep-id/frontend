@@ -48,7 +48,7 @@ const NavbarCakep = () => {
       bg={darkMode ? "dark" : "white"}
       variant={darkMode ? "dark" : "light"}
       className="shadow-sm px-0"
-      style={{ padding: "0.5rem 0" }}
+      style={{ padding: "0.5rem 0", position: "fixed", width: "100%", zIndex: 1030 }}
     >
       <Container>
         <Navbar.Brand href="#" className="fw-bold fs-4 text-dark" style={{ color: darkMode ? "#fff" : "#2d3436" }}>
@@ -57,10 +57,10 @@ const NavbarCakep = () => {
         <Navbar.Toggle aria-controls="cakep-navbar" />
         <Navbar.Collapse id="cakep-navbar">
           <Nav className="ms-auto">
-            <Nav.Link href="#home" className="fw-medium mx-2">Home</Nav.Link>
-            <Nav.Link href="#fitur" className="fw-medium mx-2">Fitur</Nav.Link>
-            <Nav.Link href="#carakerja" className="fw-medium mx-2">Cara Kerja</Nav.Link>
-            <Nav.Link href="#tentangkami" className="fw-medium mx-2">Tentang Kami</Nav.Link>
+            <Nav.Link href="/#home" className="fw-medium mx-2">Home</Nav.Link>
+            <Nav.Link href="/#fitur" className="fw-medium mx-2">Fitur</Nav.Link>
+            <Nav.Link href="/#carakerja" className="fw-medium mx-2">Cara Kerja</Nav.Link>
+            <Nav.Link href="/#tentangkami" className="fw-medium mx-2">Tentang Kami</Nav.Link>
           </Nav>
           <div className="d-flex align-items-center gap-2 ms-3">
                         <Button 

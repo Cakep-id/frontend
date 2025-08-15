@@ -1,6 +1,7 @@
 import React from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { FaInstagram, FaYoutube, FaTiktok, FaPaperPlane } from "react-icons/fa";
+import logo from "../assets/tentang/logo.jpg";
 
 const Footer = () => (
   <footer className="py-5 bg-light border-top mt-5">
@@ -10,9 +11,10 @@ const Footer = () => (
         <Col md={4} className="mb-4 mb-md-0">
           <div className="d-flex align-items-center mb-2">
             <img
-              src="/logo192.png" // Ganti dengan path logo kamu
+              src={logo} 
               alt="Logo Cakep.id"
               style={{ width: 40, height: 40, marginRight: 12 }}
+              className="about-logo"
             />
             <span className="fw-bold fs-4">Cakep.id</span>
           </div>
@@ -61,6 +63,32 @@ const Footer = () => (
         &copy; {new Date().getFullYear()} Cakep.id &mdash; Universitas Lampung
       </div>
     </Container>
+
+       <style>{`
+        .about-logo-wrap { display:flex; justify-content:center; align-items:center; }
+        .about-logo {
+          width: 100%;
+          max-width: 360px;
+          height: 360px;
+          object-fit: cover;
+          border-radius: 50%;
+          border: 6px solid #fff;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        @media (max-width: 768px) {
+          .about-logo {
+            max-width: 260px;
+            height: 260px;
+          }
+        }
+        @media (max-width: 480px) {
+          .about-logo {
+            max-width: 200px;
+            height: 200px;
+          }
+        }
+      `}</style>
+      
   </footer>
 );
 

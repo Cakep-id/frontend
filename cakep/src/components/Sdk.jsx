@@ -9,7 +9,7 @@ const Sdk = () => {
   const handleClose = () => setShow(false);
 
   return (
-    <section className="py-5 bg-white">
+    <section id="syarat-ketentuan" className="py-5 bg-white">
       <Container>
         <Row className="mb-4">
           <Col>

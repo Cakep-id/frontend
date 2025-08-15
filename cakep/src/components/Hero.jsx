@@ -3,7 +3,7 @@ import heroImg from "../assets/hero.png";
 
 const Hero = () => {
   return (
-    <section className="d-flex align-items-center py-5 bg-light" style={{ minHeight: "100vh" }}>
+    <section id="home" className="d-flex align-items-center py-5 bg-light" style={{ minHeight: "100vh" }}>
       <Container>
         <Row className="align-items-center">
           <Col md={6} className="mb-4 mb-md-0" data-aos="fade-right">

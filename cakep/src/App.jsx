@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import "./App.css";
 import LandingPage from "./pages/LandingPage";
+import TentangKami from "./pages/TentangKami";
 
 function App() {
   useEffect(() => {
@@ -18,6 +19,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/tentang-kami" element={<TentangKami />} />
       </Routes>
     </Router>
   );

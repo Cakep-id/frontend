@@ -26,7 +26,7 @@ const caraList = [
 
 const Cara = () => {
 	return (
-		<section className="py-5 bg-white">
+		<section id="carakerja" className="py-5 bg-white">
 			<Container>
 				<h2 className="fw-bold text-center mb-5" data-aos="fade-up">Cara Penggunaan CAKEP.id</h2>
 				<Row className="align-items-center">

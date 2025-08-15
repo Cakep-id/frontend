@@ -5,6 +5,7 @@ import Hero from "../components/Hero";
 import NavbarCakep from "../components/Navbar";
 import Sdk from "../components/Sdk";
 import Tentang from "../components/Tentang";
+import Chatbot from "../components/chatbot";
 
 const LandingPage = () => {
   return (
@@ -16,6 +17,7 @@ const LandingPage = () => {
         <Cara />
         <Tentang />
         <Footer />
+        <Chatbot />
     </>
   );
 };

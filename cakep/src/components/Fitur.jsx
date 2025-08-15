@@ -60,7 +60,7 @@ const Fitur = () => {
   const handleClose = () => setShow(false);
 
   return (
-    <section className="py-5 bg-light">
+    <section id="fitur" className="py-5 bg-light">
       <Container>
         <h2 className="fw-bold text-center mb-4" data-aos="fade-up">Fitur Unggulan</h2>
         <Row className="g-4 justify-content-center">

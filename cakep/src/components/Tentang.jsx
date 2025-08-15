@@ -3,7 +3,7 @@ import tentangImg from "../assets/tentang-kami.png"; // Ganti dengan path gambar
 
 const Tentang = () => {
   return (
-    <section className="py-5 bg-light">
+    <section className="py-5 bg-light" id="tentangkami">
       <Container>
         <Row className="align-items-center">
           <Col md={6} data-aos="fade-right">
@@ -11,7 +11,7 @@ const Tentang = () => {
             <p className="text-secondary mb-4">
               CAKEP.id dikembangkan oleh tim mahasiswa Universitas Lampung dalam program PKM-KC. Kami berfokus pada teknologi yang membantu industri migas dalam meningkatkan efisiensi dan keselamatan kerja melalui AI.
             </p>
-            <Button style={{ backgroundColor: "#EB7F35" }} href="/tentang">
+            <Button style={{ backgroundColor: "#EB7F35" }} href="/tentang-kami">
               Selengkapnya
             </Button>
           </Col>
