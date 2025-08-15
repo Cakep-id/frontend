@@ -40,10 +40,10 @@ const team = [
   },
   {
     name: "Isfahan Ardanni",
-    role: "Backend Developer",
+    role: "Content Creator",
     img: fahan,
-    linkedin: "#",
-    instagram: "#",
+    linkedin: "https://www.linkedin.com/in/isfahan-ardanni",
+    instagram: "https://www.instagram.com/han_ardanni",
   },
 ];
 

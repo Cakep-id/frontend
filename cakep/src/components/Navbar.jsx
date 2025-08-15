@@ -65,7 +65,7 @@ const NavbarCakep = () => {
           <div className="d-flex align-items-center gap-2 ms-3">
                         <Button 
                           variant={darkMode ? "light" : "dark"}
-                          href="#daftar"
+                          href="/login"
                           className="px-3 py-2 fw-medium"
                           style={{
                             backgroundColor: darkMode ? "#fff" : "#2d3436",

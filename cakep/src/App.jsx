@@ -4,6 +4,7 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import "./App.css";
 import LandingPage from "./pages/LandingPage";
 import TentangKami from "./pages/TentangKami";
+import Login from "./pages/Login";
 
 function App() {
   useEffect(() => {
@@ -20,6 +21,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/tentang-kami" element={<TentangKami />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
     </Router>
   );

@@ -18,7 +18,7 @@ const Hero = () => {
                 yang membantu mendeteksi risiko kerusakan aset secara 
                 otomatis hanya dari satu laporan visual dan deskripsi singkat.
             </p>
-            <Button style={{ backgroundColor: "#EB7F35" }} size="lg" href="#daftar">
+            <Button style={{ backgroundColor: "#EB7F35" }} size="lg" href="/login">
               Coba Sekarang
             </Button>
           </Col>
