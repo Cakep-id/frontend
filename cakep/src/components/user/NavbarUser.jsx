@@ -44,6 +44,13 @@ const NavbarUser = () => {
     });
   };
 
+  // Fungsi logout: hapus info login (misal token) dan redirect ke root
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/";
+  };
+
   return (
     <Navbar
       expand="lg"
@@ -72,6 +79,14 @@ const NavbarUser = () => {
               style={{ width: 40, height: 40, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
             >
               {darkMode ? '☀️' : '🌙'}
+            </Button>
+            <Button
+              variant="outline-danger"
+              className="ms-2"
+              onClick={handleLogout}
+              title="Logout"
+            >
+              Logout
             </Button>
           </div>
         </Navbar.Collapse>

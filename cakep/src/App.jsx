@@ -2,9 +2,10 @@ import AOS from "aos";
 import { useEffect } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import "./App.css";
+import Admin from "./pages/Admin";
 import LandingPage from "./pages/LandingPage";
-import TentangKami from "./pages/TentangKami";
 import Login from "./pages/Login";
+import TentangKami from "./pages/TentangKami";
 import User from "./pages/User";
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
         <Route path="/tentang-kami" element={<TentangKami />} />
         <Route path="/login" element={<Login />} />
         <Route path="/user/*" element={<User />} />
+        <Route path="/admin/*" element={<Admin />} />
       </Routes>
     </Router>
   );
