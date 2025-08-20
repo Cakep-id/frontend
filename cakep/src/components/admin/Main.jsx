@@ -260,8 +260,54 @@ const Main = () => {
           </Row>
 
           {/* Recent Reports */}
-          <Row>
-            <Col md={12} className="mb-4">
+          <Row className="mb-4">
+            {/* Quick Actions */}
+            <Col md={4} className="mb-4">
+              <Card className={`h-100 ${isDark ? 'bg-dark border-secondary' : 'bg-white'}`}>
+                <Card.Header className={isDark ? 'bg-dark border-secondary' : ''}>
+                  <h6 className="mb-0 fw-bold">Quick Actions</h6>
+                </Card.Header>
+                <Card.Body>
+                  <div className="d-grid gap-2">
+                    <a href="/admin/edit-pemeliharaan" className="btn btn-primary">
+                      <i className="fas fa-tools me-2"></i>
+                      Edit Pemeliharaan Asset
+                    </a>
+                    <a href="/admin/training-data" className="btn btn-success">
+                      <i className="fas fa-brain me-2"></i>
+                      Training Data Chatbot
+                    </a>
+                    <a href="/admin/daftar-laporan" className="btn btn-outline-primary">
+                      <i className="fas fa-file-alt me-2"></i>
+                      Kelola Laporan
+                    </a>
+                    <a href="/admin/management-pengguna" className="btn btn-outline-secondary">
+                      <i className="fas fa-users me-2"></i>
+                      Manajemen User
+                    </a>
+                  </div>
+                  
+                  <hr className={isDark ? 'border-secondary' : ''} />
+                  
+                  <div className="small">
+                    <div className={`mb-2 ${isDark ? 'text-light' : 'text-muted'}`}>
+                      <i className="fas fa-calendar-check me-2"></i>
+                      <strong>12</strong> jadwal pemeliharaan bulan ini
+                    </div>
+                    <div className={`mb-2 ${isDark ? 'text-light' : 'text-muted'}`}>
+                      <i className="fas fa-robot me-2"></i>
+                      <strong>8</strong> jadwal dari AI perlu review
+                    </div>
+                    <div className={`${isDark ? 'text-light' : 'text-muted'}`}>
+                      <i className="fas fa-clock me-2"></i>
+                      <strong>3</strong> jadwal hari ini
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card>
+            </Col>
+
+            <Col md={8} className="mb-4">
               <Card className={`h-100 ${isDark ? 'bg-dark border-secondary' : 'bg-white'}`}>
                 <Card.Header className={isDark ? 'bg-dark border-secondary' : ''}>
                   <h6 className="mb-0 fw-bold">Laporan Terbaru</h6>

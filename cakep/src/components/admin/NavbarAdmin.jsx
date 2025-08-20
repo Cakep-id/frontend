@@ -61,6 +61,8 @@ const NavbarAdmin = () => {
           <Nav className="ms-auto">
             <Nav.Link href="/admin" className="fw-medium mx-2">Home</Nav.Link>
             <Nav.Link href="/admin/daftar-laporan" className="fw-medium mx-2">Daftar Laporan</Nav.Link>
+            <Nav.Link href="/admin/edit-pemeliharaan" className="fw-medium mx-2">Edit Pemeliharaan</Nav.Link>
+            <Nav.Link href="/admin/training-data" className="fw-medium mx-2">Training Data</Nav.Link>
             <Nav.Link href="/admin/management-pengguna" className="fw-medium mx-2">Management Pengguna</Nav.Link>
           </Nav>
           <div className="d-flex align-items-center gap-2 ms-3">

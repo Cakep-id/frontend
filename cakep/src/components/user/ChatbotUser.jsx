@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, Dropdown, Form, InputGroup } from "react-bootstrap";
-import { FaBars, FaCopy, FaPaperPlane, FaPlus, FaRobot, FaTimes, FaTrash, FaUser } from "react-icons/fa";
+import { Badge, Button, Dropdown, Form, InputGroup, Spinner } from "react-bootstrap";
+import { FaBars, FaCopy, FaExclamationTriangle, FaPaperPlane, FaPlus, FaRobot, FaTimes, FaTrash, FaUser } from "react-icons/fa";
 
 const ChatbotUser = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,7 +9,9 @@ const ChatbotUser = () => {
       id: 1,
       from: "bot",
       text: "Selamat datang di chatbot Cakep.id! Saya adalah asisten AI yang siap membantu Anda dengan berbagai pertanyaan teknis mengenai platform ini. Silahkan tanya apapun yang ingin Anda ketahui!",
-      timestamp: new Date()
+      timestamp: new Date(),
+      confidence: 1.0,
+      source: "system"
     }
   ]);
   const [input, setInput] = useState("");
@@ -20,17 +22,22 @@ const ChatbotUser = () => {
       id: 1, 
       title: "Chat Baru", 
       lastMessage: "Selamat datang di chatbot...",
+      category: "assistant",
       messages: [
         {
           id: 1,
           from: "bot",
           text: "Selamat datang di chatbot Cakep.id! Saya adalah asisten AI yang siap membantu Anda dengan berbagai pertanyaan teknis mengenai platform ini. Silahkan tanya apapun yang ingin Anda ketahui!",
-          timestamp: new Date()
+          timestamp: new Date(),
+          confidence: 1.0,
+          source: "system"
         }
       ]
     }
   ]);
   const [currentChatId, setCurrentChatId] = useState(1);
+  const [chatMode, setChatMode] = useState("assistant"); // "faq" or "assistant"
+  const [apiError, setApiError] = useState(null);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
 
@@ -69,11 +76,11 @@ const ChatbotUser = () => {
     }
   };
 
-  // Send message
-  const sendMessage = (e) => {
+  // Send message to API
+  const sendMessage = async (e) => {
     e?.preventDefault();
     const text = input.trim();
-    if (!text) return;
+    if (!text || isTyping) return;
 
     const newMessage = {
       id: Date.now(),
@@ -86,12 +93,13 @@ const ChatbotUser = () => {
     setMessages(updatedMessages);
     setInput("");
     setIsTyping(true);
+    setApiError(null);
 
     // Update chat history with new message
     setChatHistory(prev => 
       prev.map(chat => 
         chat.id === currentChatId 
-          ? { ...chat, messages: updatedMessages, lastMessage: text }
+          ? { ...chat, messages: updatedMessages, lastMessage: text, category: chatMode }
           : chat
       )
     );
@@ -101,64 +109,114 @@ const ChatbotUser = () => {
       textareaRef.current.style.height = 'auto';
     }
 
-    // Simulate AI response
-    setTimeout(() => {
-      const botResponse = getBotResponse(text);
+    try {
+      // Call backend API
+      const response = await fetch('http://localhost:3001/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: text,
+          category: chatMode
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
       const botMessage = {
         id: Date.now() + 1,
         from: "bot",
-        text: botResponse,
-        timestamp: new Date()
+        text: data.response,
+        timestamp: new Date(),
+        confidence: data.confidence || 0,
+        source: data.source || 'api',
+        matchedQuestion: data.matched_question,
+        dataId: data.data_id
       };
       
       const finalMessages = [...updatedMessages, botMessage];
       setMessages(finalMessages);
-      setIsTyping(false);
 
       // Update chat history with bot response
       setChatHistory(prev => 
         prev.map(chat => 
           chat.id === currentChatId 
-            ? { ...chat, messages: finalMessages, lastMessage: botResponse.substring(0, 50) + "..." }
+            ? { ...chat, messages: finalMessages, lastMessage: botMessage.text.substring(0, 50) + "..." }
             : chat
         )
       );
-    }, 1500);
+
+    } catch (error) {
+      console.error('Chat API Error:', error);
+      setApiError(error.message);
+      
+      // Fallback to static response
+      const fallbackResponse = getFallbackResponse(text);
+      const botMessage = {
+        id: Date.now() + 1,
+        from: "bot",
+        text: fallbackResponse,
+        timestamp: new Date(),
+        confidence: 0.5,
+        source: 'fallback'
+      };
+      
+      const finalMessages = [...updatedMessages, botMessage];
+      setMessages(finalMessages);
+
+      setChatHistory(prev => 
+        prev.map(chat => 
+          chat.id === currentChatId 
+            ? { ...chat, messages: finalMessages, lastMessage: botMessage.text.substring(0, 50) + "..." }
+            : chat
+        )
+      );
+    } finally {
+      setIsTyping(false);
+    }
   };
 
-  // Bot response logic (static for now)
-  const getBotResponse = (userMessage) => {
+  // Fallback response when API is not available
+  const getFallbackResponse = (userMessage) => {
     const message = userMessage.toLowerCase();
     
-    if (message.includes('laporan') || message.includes('report')) {
-      return "Untuk membuat laporan, Anda bisa menggunakan fitur 'Buat Laporan' di dashboard. Fitur ini memungkinkan Anda untuk mengambil foto, mendeteksi lokasi otomatis, dan memberikan deskripsi detail tentang aset yang bermasalah. Apakah ada hal khusus tentang laporan yang ingin Anda ketahui?";
+    if (chatMode === 'faq') {
+      if (message.includes('cakep') || message.includes('platform')) {
+        return "Cakep.id adalah platform manajemen aset migas berbasis AI yang membantu dalam monitoring, pemeliharaan, dan analisis risiko aset industri.";
+      }
+      
+      if (message.includes('laporan') || message.includes('report')) {
+        return "Untuk membuat laporan, Anda bisa menggunakan fitur 'Buat Laporan' di dashboard. Fitur ini memungkinkan Anda untuk mengambil foto, mendeteksi lokasi otomatis, dan memberikan deskripsi detail tentang aset yang bermasalah.";
+      }
+      
+      if (message.includes('status') || message.includes('tracking')) {
+        return "Anda dapat memantau status laporan melalui halaman 'Status Laporan'. Di sana Anda akan melihat berbagai status seperti: Pending (kuning), Diproses (biru), Analisis AI (ungu), Selesai (hijau), dan Ditolak (merah).";
+      }
+      
+      if (message.includes('jadwal') || message.includes('maintenance') || message.includes('pemeliharaan')) {
+        return "Jadwal pemeliharaan aset dapat dilihat di dashboard utama dalam bentuk kalender interaktif. Anda dapat navigasi antar bulan menggunakan tombol panah atau keyboard shortcut (← →).";
+      }
+    } else {
+      // Assistant mode
+      if (message.includes('analisis') || message.includes('foto')) {
+        return "Saya siap membantu menganalisis foto kerusakan Anda. Silakan upload foto dan saya akan memberikan assessment tingkat risiko serta rekomendasi tindakan.";
+      }
+      
+      if (message.includes('jadwal') || message.includes('pemeliharaan')) {
+        return "Saya dapat membantu membuat jadwal pemeliharaan yang optimal berdasarkan kondisi aset dan data historis. Silakan berikan detail aset yang ingin dijadwalkan.";
+      }
+      
+      if (message.includes('bantuan') || message.includes('help')) {
+        return "Saya di sini untuk membantu Anda. Saya dapat menganalisis foto kerusakan, membuat jadwal pemeliharaan, memberikan rekomendasi, dan menjawab pertanyaan teknis lainnya.";
+      }
     }
     
-    if (message.includes('status') || message.includes('tracking')) {
-      return "Anda dapat memantau status laporan melalui halaman 'Status Laporan'. Di sana Anda akan melihat berbagai status seperti: Pending (kuning), Diproses (biru), Analisis AI (ungu), Selesai (hijau), dan Ditolak (merah). Setiap status memiliki warna yang berbeda untuk memudahkan identifikasi.";
-    }
-    
-    if (message.includes('jadwal') || message.includes('maintenance') || message.includes('pemeliharaan')) {
-      return "Jadwal pemeliharaan aset dapat dilihat di dashboard utama dalam bentuk kalender interaktif. Anda dapat navigasi antar bulan menggunakan tombol panah atau keyboard shortcut (← →). Tanggal yang memiliki jadwal akan ditandai dengan bintang (★).";
-    }
-    
-    if (message.includes('ai') || message.includes('artificial intelligence')) {
-      return "Platform Cakep.id menggunakan teknologi AI untuk menganalisis laporan aset secara otomatis. AI kami dapat mendeteksi pola kerusakan, memprediksi maintenance, dan memberikan rekomendasi tindakan. Semua analisis AI akan divalidasi oleh admin sebelum eksekusi.";
-    }
-    
-    if (message.includes('kamera') || message.includes('foto') || message.includes('camera')) {
-      return "Fitur kamera pada platform ini menggunakan teknologi WebRTC untuk akses real-time. Saat mengambil foto laporan, kamera akan membuka dalam mode fullscreen untuk hasil yang optimal. Pastikan browser Anda mengizinkan akses kamera.";
-    }
-    
-    if (message.includes('lokasi') || message.includes('location') || message.includes('gps')) {
-      return "Sistem lokasi menggunakan API Geolocation browser dan reverse geocoding untuk mendapatkan alamat lengkap. Lokasi akan terdeteksi otomatis saat membuat laporan, dan Anda dapat melihat posisi di Google Maps melalui link yang disediakan.";
-    }
-    
-    if (message.includes('help') || message.includes('bantuan') || message.includes('cara')) {
-      return "Berikut panduan singkat penggunaan platform:\n\n1. **Dashboard**: Lihat laporan terkini dan jadwal pemeliharaan\n2. **Buat Laporan**: Ambil foto, deteksi lokasi, dan buat laporan aset\n3. **Status Laporan**: Pantau progress laporan Anda\n4. **Chatbot**: Tanya apapun tentang platform ini\n\nAda yang ingin Anda pelajari lebih detail?";
-    }
-    
-    return "Terima kasih atas pertanyaan Anda. Sebagai asisten AI Cakep.id, saya siap membantu dengan berbagai hal terkait platform ini seperti cara membuat laporan, memantau status, menggunakan fitur AI, navigasi jadwal pemeliharaan, dan fitur teknis lainnya. Bisa Anda jelaskan lebih spesifik apa yang ingin Anda ketahui?";
+    return `Terima kasih atas pertanyaan Anda. Saya sedang belajar untuk memberikan jawaban yang lebih baik. Silakan hubungi admin jika Anda memerlukan bantuan lebih lanjut.`;
   };
 
   // Copy message to clipboard
@@ -189,19 +247,24 @@ const ChatbotUser = () => {
   };
 
   // New chat
+  // Create new chat
   const newChat = () => {
     const newChatId = Date.now();
+    const modeText = chatMode === 'faq' ? 'FAQ' : 'Assistant';
     const initialMessage = {
       id: Date.now(),
       from: "bot",
-      text: "Halo! Ini adalah percakapan baru. Bagaimana saya bisa membantu Anda?",
-      timestamp: new Date()
+      text: `Halo! Saya dalam mode ${modeText}. Bagaimana saya bisa membantu Anda?`,
+      timestamp: new Date(),
+      confidence: 1.0,
+      source: "system"
     };
     
     const newChatData = {
       id: newChatId,
-      title: `Chat ${chatHistory.length + 1}`,
+      title: `${modeText} Chat ${chatHistory.length + 1}`,
       lastMessage: "Memulai percakapan baru...",
+      category: chatMode,
       messages: [initialMessage]
     };
     
@@ -216,7 +279,21 @@ const ChatbotUser = () => {
     if (selectedChat) {
       setCurrentChatId(chatId);
       setMessages(selectedChat.messages || []);
+      setChatMode(selectedChat.category || 'assistant');
     }
+  };
+
+  // Change chat mode
+  const changeChatMode = (mode) => {
+    setChatMode(mode);
+    // Update current chat category
+    setChatHistory(prev => 
+      prev.map(chat => 
+        chat.id === currentChatId 
+          ? { ...chat, category: mode }
+          : chat
+      )
+    );
   };
 
   const formatTime = (date) => {
@@ -354,9 +431,14 @@ const ChatbotUser = () => {
               </Button>
               <div>
                 <h5 className="mb-0 fw-bold">Chatbot Cakep.id</h5>
-                <small className={isDark ? "text-light" : "text-muted"}>
-                  Asisten AI untuk platform manajemen aset
-                </small>
+                <div className="d-flex align-items-center gap-2">
+                  <small className={isDark ? "text-light" : "text-muted"}>
+                    Asisten AI untuk platform manajemen aset
+                  </small>
+                  <Badge bg={chatMode === 'faq' ? 'info' : 'success'} className="ms-2">
+                    {chatMode === 'faq' ? 'FAQ Mode' : 'Assistant Mode'}
+                  </Badge>
+                </div>
               </div>
             </div>
             
@@ -370,6 +452,22 @@ const ChatbotUser = () => {
                   ⋮
                 </Dropdown.Toggle>
                 <Dropdown.Menu className={isDark ? "dropdown-menu-dark" : ""}>
+                  <Dropdown.Header>Mode Chatbot</Dropdown.Header>
+                  <Dropdown.Item 
+                    onClick={() => changeChatMode('faq')}
+                    active={chatMode === 'faq'}
+                  >
+                    <FaRobot className="me-2" />
+                    FAQ Mode
+                  </Dropdown.Item>
+                  <Dropdown.Item 
+                    onClick={() => changeChatMode('assistant')}
+                    active={chatMode === 'assistant'}
+                  >
+                    <FaUser className="me-2" />
+                    Assistant Mode
+                  </Dropdown.Item>
+                  <Dropdown.Divider />
                   <Dropdown.Item onClick={clearChat}>
                     <FaTrash className="me-2" />
                     Hapus Chat
@@ -378,6 +476,15 @@ const ChatbotUser = () => {
                     <FaPlus className="me-2" />
                     Chat Baru
                   </Dropdown.Item>
+                  {apiError && (
+                    <>
+                      <Dropdown.Divider />
+                      <Dropdown.ItemText className="text-warning small">
+                        <FaExclamationTriangle className="me-1" />
+                        API: {apiError}
+                      </Dropdown.ItemText>
+                    </>
+                  )}
                 </Dropdown.Menu>
               </Dropdown>
               
@@ -431,6 +538,21 @@ const ChatbotUser = () => {
                         <small className="text-muted">
                           {formatTime(message.timestamp)}
                         </small>
+                        {/* Confidence indicator for bot messages */}
+                        {message.from === 'bot' && message.confidence !== undefined && (
+                          <Badge 
+                            bg={
+                              message.confidence >= 0.8 ? 'success' : 
+                              message.confidence >= 0.5 ? 'warning' : 'secondary'
+                            }
+                            className="small"
+                          >
+                            {message.source === 'knowledge_base' && `${(message.confidence * 100).toFixed(0)}%`}
+                            {message.source === 'fallback' && 'Fallback'}
+                            {message.source === 'system' && 'System'}
+                            {message.source === 'api' && 'API'}
+                          </Badge>
+                        )}
                       </div>
                       
                       <div 
@@ -443,6 +565,15 @@ const ChatbotUser = () => {
                       >
                         {message.text}
                       </div>
+                      
+                      {/* Show matched question for knowledge base responses */}
+                      {message.from === 'bot' && message.matchedQuestion && message.source === 'knowledge_base' && (
+                        <div className="mt-2">
+                          <small className="text-muted">
+                            💡 Berdasarkan pertanyaan: "{message.matchedQuestion}"
+                          </small>
+                        </div>
+                      )}
                       
                       {message.from === 'bot' && (
                         <div className="mt-2">
@@ -482,15 +613,15 @@ const ChatbotUser = () => {
                         <small className={`fw-medium ${isDark ? 'text-light' : 'text-dark'}`}>
                           Asisten AI
                         </small>
+                        <Badge bg="primary" className="small">
+                          {chatMode === 'faq' ? 'FAQ' : 'Assistant'}
+                        </Badge>
                       </div>
                       <div 
-                        className={`p-3 rounded ${isDark ? 'bg-dark border text-light' : 'bg-white border'}`}
+                        className={`p-3 rounded d-flex align-items-center gap-2 ${isDark ? 'bg-dark border text-light' : 'bg-white border'}`}
                       >
-                        <div className="d-flex gap-1">
-                          <div className="bg-secondary rounded-circle" style={{width: '8px', height: '8px', animation: 'pulse 1.5s infinite'}}></div>
-                          <div className="bg-secondary rounded-circle" style={{width: '8px', height: '8px', animation: 'pulse 1.5s infinite 0.2s'}}></div>
-                          <div className="bg-secondary rounded-circle" style={{width: '8px', height: '8px', animation: 'pulse 1.5s infinite 0.4s'}}></div>
-                        </div>
+                        <Spinner animation="grow" size="sm" variant="primary" />
+                        <span>Sedang memproses...</span>
                       </div>
                     </div>
                   </div>
