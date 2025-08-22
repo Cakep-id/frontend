@@ -117,52 +117,45 @@ const ChatbotUser = () => {
         const newConversationId = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         setConversationId(newConversationId);
       }
-
-      // Prepare context from recent messages
-      const context = messages.slice(-6).map(msg => ({
-        role: msg.from === 'user' ? 'user' : 'assistant',
-        content: msg.text
-      }));
-
-      // Call enhanced backend API with Grok integration
-      const token = localStorage.getItem('token');
-      const endpoint = chatMode === 'faq' ? '/api/chatbot/faq' : '/api/chatbot/chat';
-      
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+      // Simulasi API call - menggunakan response statis
+      const staticResponses = {
+        faq: {
+          'apa itu cakep': 'Cakep.id adalah platform manajemen aset migas berbasis AI yang membantu dalam monitoring, pemeliharaan, dan analisis risiko aset industri.',
+          'cara melaporkan': 'Anda dapat melaporkan kerusakan melalui menu "Buat Laporan" di dashboard user. Upload foto, isi deskripsi, dan sistem AI akan menganalisis tingkat risiko.',
+          'fitur ai': 'Fitur AI meliputi: deteksi visual kerusakan, analisis risiko otomatis, prediksi pemeliharaan, dan chatbot untuk bantuan 24/7.',
+          'default': 'Terima kasih atas pertanyaan Anda. Untuk informasi lebih detail, silakan lihat menu FAQ atau hubungi administrator.'
         },
-        body: JSON.stringify(
-          chatMode === 'faq' 
-            ? { question: text }
-            : { 
-                message: text, 
-                conversation_id: conversationId,
-                context: context
-              }
-        )
-      });
+        assistant: {
+          'analisis': 'Saya akan menganalisis masalah yang Anda sampaikan. Berdasarkan pengalaman sistem, saya dapat memberikan rekomendasi untuk penanganan aset.',
+          'jadwal': 'Jadwal pemeliharaan dapat dilihat di dashboard dan akan memberikan notifikasi otomatis sesuai dengan tingkat prioritas aset.',
+          'monitoring': 'Sistem monitoring aset menggunakan AI untuk deteksi dini masalah dan analisis kondisi real-time.',
+          'default': 'Saya siap membantu Anda dengan pertanyaan terkait manajemen aset. Silakan tanyakan hal spesifik yang ingin Anda ketahui.'
+        }
+      };
 
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status} - ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      // Find matching response
+      const normalizedText = text.toLowerCase();
+      let responseText = '';
       
-      if (!data.success) {
-        throw new Error(data.message || 'API call failed');
+      if (chatMode === 'faq') {
+        const faqKey = Object.keys(staticResponses.faq).find(key => 
+          key !== 'default' && normalizedText.includes(key)
+        );
+        responseText = staticResponses.faq[faqKey] || staticResponses.faq.default;
+      } else {
+        const assistantKey = Object.keys(staticResponses.assistant).find(key => 
+          key !== 'default' && normalizedText.includes(key)
+        );
+        responseText = staticResponses.assistant[assistantKey] || staticResponses.assistant.default;
       }
 
-      const responseData = data.data;
       const botMessage = {
         id: Date.now() + 1,
         from: "bot",
-        text: chatMode === 'faq' ? responseData.answer : responseData.response,
-        timestamp: new Date(responseData.timestamp),
-        confidence: responseData.confidence || 0,
-        source: responseData.source || 'api'
+        text: responseText,
+        timestamp: new Date(),
+        confidence: 0.95,
+        source: 'static'
       };
       
       const finalMessages = [...updatedMessages, botMessage];
@@ -171,7 +164,7 @@ const ChatbotUser = () => {
       // Update AI status
       setAiStatus(prev => ({
         ...prev,
-        source: responseData.source,
+        source: 'static',
         available: true
       }));
 

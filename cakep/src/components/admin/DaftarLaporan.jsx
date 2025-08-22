@@ -116,7 +116,7 @@ const DaftarLaporan = () => {
       ],
       tempat: "Workshop",
       prosedur: "Cek tekanan, bersihkan filter, tes fungsi kompresor.",
-      aiAnalysis: "AI mendeteksi kerusakan minor pada filter dengan tingkat kepercayaan 76%. Status: Telah disetujui dan diperbaiki."
+      additionalNotes: "Filter telah diganti dan sistem telah dikalibrasi ulang untuk performa optimal."
     },
     {
       id: 5,

@@ -51,21 +51,66 @@ const TrainingAI = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const headers = { 'Authorization': `Bearer ${token}` };
-
+      // Menggunakan data statis instead of API call
       if (activeTab === 'risk') {
-        const response = await fetch('http://localhost:5000/api/training/risk', { headers });
-        const data = await response.json();
-        if (data.success) {
-          setRiskData(data.data.risk_training || []);
-        }
+        setRiskData([
+          {
+            id: 1,
+            asset_category: 'Generator',
+            damage_description: 'Oil leakage from main bearing',
+            severity_level: 'high',
+            risk_factors: { vibration: 0.8, temperature: 0.6, pressure: 0.7 },
+            is_verified: true,
+            created_at: '2025-08-20T10:00:00Z'
+          },
+          {
+            id: 2,
+            asset_category: 'HVAC',
+            damage_description: 'Dirty air filter causing reduced efficiency',
+            severity_level: 'medium',
+            risk_factors: { airflow: 0.5, filter_condition: 0.8 },
+            is_verified: true,
+            created_at: '2025-08-20T11:00:00Z'
+          },
+          {
+            id: 3,
+            asset_category: 'Elevator',
+            damage_description: 'Cable wear detected during inspection',
+            severity_level: 'high',
+            risk_factors: { cable_condition: 0.9, safety_margin: 0.3 },
+            is_verified: false,
+            created_at: '2025-08-20T12:00:00Z'
+          }
+        ]);
       } else if (activeTab === 'maintenance') {
-        const response = await fetch('http://localhost:5000/api/training/maintenance', { headers });
-        const data = await response.json();
-        if (data.success) {
-          setMaintenanceData(data.data.maintenance_training || []);
-        }
+        setMaintenanceData([
+          {
+            id: 1,
+            asset_category: 'Generator',
+            damage_type: 'Oil Leak',
+            severity_level: 'high',
+            recommended_action: 'Replace main bearing seals',
+            priority_level: 'high',
+            estimated_duration: 8,
+            cost_range_min: 5000000,
+            cost_range_max: 8000000,
+            schedule_offset_days: 1,
+            admin_notes: 'Schedule during maintenance window'
+          },
+          {
+            id: 2,
+            asset_category: 'HVAC',
+            damage_type: 'Filter Dirty',
+            severity_level: 'medium',
+            recommended_action: 'Replace air filter',
+            priority_level: 'medium',
+            estimated_duration: 2,
+            cost_range_min: 500000,
+            cost_range_max: 1000000,
+            schedule_offset_days: 7,
+            admin_notes: 'Standard maintenance'
+          }
+        ]);
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -76,14 +121,30 @@ const TrainingAI = () => {
 
   const loadStatistics = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/training/statistics', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      // Menggunakan data statis
+      setStatistics({
+        risk: { 
+          total: 15, 
+          verified: 12, 
+          bySeverity: [
+            { severity: 'low', count: 3 },
+            { severity: 'medium', count: 6 },
+            { severity: 'high', count: 4 },
+            { severity: 'critical', count: 2 }
+          ] 
+        },
+        maintenance: { 
+          total: 23, 
+          active: 18, 
+          byCategory: [
+            { category: 'Generator', count: 8 },
+            { category: 'HVAC', count: 6 },
+            { category: 'Elevator', count: 4 },
+            { category: 'IT Equipment', count: 3 },
+            { category: 'Mechanical', count: 2 }
+          ]
+        }
       });
-      const data = await response.json();
-      if (data.success) {
-        setStatistics(data.data.statistics);
-      }
     } catch (error) {
       console.error('Error loading statistics:', error);
     }
@@ -95,36 +156,29 @@ const TrainingAI = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const url = editingRisk 
-        ? `http://localhost:5000/api/training/risk/${editingRisk.id}`
-        : 'http://localhost:5000/api/training/risk';
-      
-      const method = editingRisk ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          ...riskForm,
-          risk_factors: riskForm.risk_factors ? JSON.parse(riskForm.risk_factors) : {}
-        })
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setMessage(editingRisk ? 'Risk training data updated!' : 'Risk training data created!');
-        setShowRiskModal(false);
-        resetRiskForm();
-        loadData();
-        loadStatistics();
+      // Simulasi API call - menggunakan data statis
+      if (editingRisk) {
+        setRiskData(prev => prev.map(item => 
+          item.id === editingRisk.id 
+            ? { ...item, ...riskForm, risk_factors: riskForm.risk_factors ? JSON.parse(riskForm.risk_factors) : {} }
+            : item
+        ));
+        setMessage('Risk training data updated!');
       } else {
-        setMessage(data.message || 'Error saving risk training data');
+        const newData = {
+          id: Math.max(...riskData.map(d => d.id), 0) + 1,
+          ...riskForm,
+          risk_factors: riskForm.risk_factors ? JSON.parse(riskForm.risk_factors) : {},
+          is_verified: false,
+          created_at: new Date().toISOString()
+        };
+        setRiskData(prev => [...prev, newData]);
+        setMessage('Risk training data created!');
       }
+      
+      setShowRiskModal(false);
+      resetRiskForm();
+      loadStatistics();
     } catch (error) {
       console.error('Error saving risk training:', error);
       setMessage('Error saving risk training data');
@@ -147,18 +201,10 @@ const TrainingAI = () => {
     if (!window.confirm('Are you sure you want to delete this risk training data?')) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/training/risk/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setMessage('Risk training data deleted!');
-        loadData();
-        loadStatistics();
-      }
+      // Simulasi API call - menggunakan data statis
+      setRiskData(prev => prev.filter(item => item.id !== id));
+      setMessage('Risk training data deleted!');
+      loadStatistics();
     } catch (error) {
       console.error('Error deleting risk training:', error);
       setMessage('Error deleting risk training data');
@@ -167,22 +213,14 @@ const TrainingAI = () => {
 
   const handleRiskVerify = async (id, isVerified) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/training/risk/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ is_verified: isVerified })
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setMessage(`Risk training data ${isVerified ? 'verified' : 'unverified'}!`);
-        loadData();
-        loadStatistics();
-      }
+      // Simulasi API call - menggunakan data statis
+      setRiskData(prev => prev.map(item => 
+        item.id === id 
+          ? { ...item, is_verified: isVerified }
+          : item
+      ));
+      setMessage(`Risk training data ${isVerified ? 'verified' : 'unverified'}!`);
+      loadStatistics();
     } catch (error) {
       console.error('Error verifying risk training:', error);
       setMessage('Error updating verification status');
@@ -205,39 +243,37 @@ const TrainingAI = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const url = editingMaintenance 
-        ? `http://localhost:5000/api/training/maintenance/${editingMaintenance.id}`
-        : 'http://localhost:5000/api/training/maintenance';
-      
-      const method = editingMaintenance ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
+      // Simulasi API call - menggunakan data statis
+      if (editingMaintenance) {
+        setMaintenanceData(prev => prev.map(item => 
+          item.id === editingMaintenance.id 
+            ? { 
+                ...item, 
+                ...maintenanceForm,
+                estimated_duration: parseInt(maintenanceForm.estimated_duration),
+                cost_range_min: parseFloat(maintenanceForm.cost_range_min),
+                cost_range_max: parseFloat(maintenanceForm.cost_range_max),
+                schedule_offset_days: parseInt(maintenanceForm.schedule_offset_days)
+              }
+            : item
+        ));
+        setMessage('Maintenance training data updated!');
+      } else {
+        const newData = {
+          id: Math.max(...maintenanceData.map(d => d.id), 0) + 1,
           ...maintenanceForm,
           estimated_duration: parseInt(maintenanceForm.estimated_duration),
           cost_range_min: parseFloat(maintenanceForm.cost_range_min),
           cost_range_max: parseFloat(maintenanceForm.cost_range_max),
           schedule_offset_days: parseInt(maintenanceForm.schedule_offset_days)
-        })
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setMessage(editingMaintenance ? 'Maintenance training data updated!' : 'Maintenance training data created!');
-        setShowMaintenanceModal(false);
-        resetMaintenanceForm();
-        loadData();
-        loadStatistics();
-      } else {
-        setMessage(data.message || 'Error saving maintenance training data');
+        };
+        setMaintenanceData(prev => [...prev, newData]);
+        setMessage('Maintenance training data created!');
       }
+      
+      setShowMaintenanceModal(false);
+      resetMaintenanceForm();
+      loadStatistics();
     } catch (error) {
       console.error('Error saving maintenance training:', error);
       setMessage('Error saving maintenance training data');
@@ -266,18 +302,10 @@ const TrainingAI = () => {
     if (!window.confirm('Are you sure you want to delete this maintenance training data?')) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/training/maintenance/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setMessage('Maintenance training data deleted!');
-        loadData();
-        loadStatistics();
-      }
+      // Simulasi API call - menggunakan data statis
+      setMaintenanceData(prev => prev.filter(item => item.id !== id));
+      setMessage('Maintenance training data deleted!');
+      loadStatistics();
     } catch (error) {
       console.error('Error deleting maintenance training:', error);
       setMessage('Error deleting maintenance training data');

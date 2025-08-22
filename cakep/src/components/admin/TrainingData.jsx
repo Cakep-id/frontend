@@ -44,65 +44,46 @@ const TrainingData = () => {
 
   // Load data training saat komponen dimount
   useEffect(() => {
-    fetchTrainingData();
-  }, []);
-
-  // Fungsi untuk fetch data training dari API
-  const fetchTrainingData = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('http://localhost:3001/api/training');
-      if (response.ok) {
-        const data = await response.json();
-        setTrainingData(data);
-      } else {
-        throw new Error('Failed to fetch training data');
+    // Menggunakan data statis instead of API call
+    setTrainingData([
+      {
+        id: 1,
+        category: 'faq',
+        question: 'Apa itu Cakep.id?',
+        answer: 'Cakep.id adalah platform manajemen aset migas berbasis AI yang membantu dalam monitoring, pemeliharaan, dan analisis risiko aset industri.',
+        created_at: '2025-08-20T10:00:00Z'
+      },
+      {
+        id: 2,
+        category: 'faq',
+        question: 'Bagaimana cara melaporkan kerusakan aset?',
+        answer: 'Anda dapat melaporkan kerusakan melalui menu "Buat Laporan" di dashboard user. Upload foto, isi deskripsi, dan sistem AI akan menganalisis tingkat risiko.',
+        created_at: '2025-08-20T10:15:00Z'
+      },
+      {
+        id: 3,
+        category: 'assistant',
+        question: 'Tolong analisis foto kerusakan ini',
+        answer: 'Saya akan menganalisis foto yang Anda berikan. Berdasarkan analisis AI, saya dapat memberikan assessment tingkat risiko dan rekomendasi tindakan.',
+        created_at: '2025-08-20T10:30:00Z'
+      },
+      {
+        id: 4,
+        category: 'faq',
+        question: 'Apa saja fitur utama platform ini?',
+        answer: 'Fitur utama meliputi: AI Vision untuk deteksi kerusakan, Dashboard interaktif, Jadwal pemeliharaan otomatis, Analisis risiko, Riwayat kerusakan, dan Multi-user management.',
+        created_at: '2025-08-20T11:00:00Z'
+      },
+      {
+        id: 5,
+        category: 'assistant',
+        question: 'Buatkan jadwal pemeliharaan untuk conveyor',
+        answer: 'Berdasarkan data historis dan kondisi aset, saya akan membuat jadwal pemeliharaan preventif untuk conveyor Anda dengan interval optimal.',
+        created_at: '2025-08-20T11:15:00Z'
       }
-    } catch (error) {
-      console.error('Error fetching training data:', error);
-      setError('Gagal memuat data training. Menggunakan data dummy.');
-      // Fallback ke data dummy jika API tidak tersedia
-      setTrainingData([
-        {
-          id: 1,
-          category: 'faq',
-          question: 'Apa itu Cakep.id?',
-          answer: 'Cakep.id adalah platform manajemen aset migas berbasis AI yang membantu dalam monitoring, pemeliharaan, dan analisis risiko aset industri.',
-          created_at: '2025-08-20T10:00:00Z'
-        },
-        {
-          id: 2,
-          category: 'faq',
-          question: 'Bagaimana cara melaporkan kerusakan aset?',
-          answer: 'Anda dapat melaporkan kerusakan melalui menu "Buat Laporan" di dashboard user. Upload foto, isi deskripsi, dan sistem AI akan menganalisis tingkat risiko.',
-          created_at: '2025-08-20T10:15:00Z'
-        },
-        {
-          id: 3,
-          category: 'assistant',
-          question: 'Tolong analisis foto kerusakan ini',
-          answer: 'Saya akan menganalisis foto yang Anda berikan. Berdasarkan analisis AI, saya dapat memberikan assessment tingkat risiko dan rekomendasi tindakan.',
-          created_at: '2025-08-20T10:30:00Z'
-        },
-        {
-          id: 4,
-          category: 'faq',
-          question: 'Apa saja fitur utama platform ini?',
-          answer: 'Fitur utama meliputi: AI Vision untuk deteksi kerusakan, Dashboard interaktif, Jadwal pemeliharaan otomatis, Analisis risiko, Riwayat kerusakan, dan Multi-user management.',
-          created_at: '2025-08-20T11:00:00Z'
-        },
-        {
-          id: 5,
-          category: 'assistant',
-          question: 'Buatkan jadwal pemeliharaan untuk conveyor',
-          answer: 'Berdasarkan data historis dan kondisi aset, saya akan membuat jadwal pemeliharaan preventif untuk conveyor Anda dengan interval optimal.',
-          created_at: '2025-08-20T11:15:00Z'
-        }
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    ]);
+    setLoading(false);
+  }, []);
 
   // Fungsi untuk filter data
   const filteredData = trainingData.filter(data => {
@@ -114,59 +95,26 @@ const TrainingData = () => {
     return matchesCategory && matchesSearch;
   });
 
-  // Fungsi untuk handle add/edit
-  const handleSave = async () => {
+  // Fungsi untuk handle submit form
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
     if (!formData.question.trim() || !formData.answer.trim()) {
       setError('Pertanyaan dan jawaban harus diisi');
       return;
     }
 
     setLoading(true);
+    
+    // Simulasi API call - menggunakan data statis
     try {
-      const url = editingData 
-        ? `http://localhost:3001/api/training/${editingData.id}`
-        : 'http://localhost:3001/api/training';
-      
-      const method = editingData ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        setSuccess(editingData ? 'Data berhasil diupdate' : 'Data berhasil ditambahkan');
-        setShowModal(false);
-        setFormData({ category: 'faq', question: '', answer: '' });
-        setEditingData(null);
-        await fetchTrainingData();
-        
-        // Update AI service dengan data terbaru
-        try {
-          await fetch('http://localhost:8000/update-data', {
-            method: 'POST'
-          });
-        } catch (aiError) {
-          console.warn('Failed to update AI service:', aiError);
-        }
-      } else {
-        throw new Error('Failed to save data');
-      }
-    } catch (error) {
-      console.error('Error saving data:', error);
-      setError('Gagal menyimpan data');
-      
-      // Simulasi save untuk demo
       if (editingData) {
         setTrainingData(prev => prev.map(item => 
           item.id === editingData.id 
             ? { ...item, ...formData }
             : item
         ));
-        setSuccess('Data berhasil diupdate (demo mode)');
+        setSuccess('Data berhasil diupdate');
       } else {
         const newData = {
           id: Math.max(...trainingData.map(d => d.id), 0) + 1,
@@ -174,17 +122,18 @@ const TrainingData = () => {
           created_at: new Date().toISOString()
         };
         setTrainingData(prev => [...prev, newData]);
-        setSuccess('Data berhasil ditambahkan (demo mode)');
+        setSuccess('Data berhasil ditambahkan');
       }
       setShowModal(false);
       setFormData({ category: 'faq', question: '', answer: '' });
       setEditingData(null);
+    } catch (error) {
+      console.error('Error saving data:', error);
+      setError('Gagal menyimpan data');
     } finally {
       setLoading(false);
     }
-  };
-
-  // Fungsi untuk handle edit
+  };  // Fungsi untuk handle edit
   const handleEdit = (data) => {
     setEditingData(data);
     setFormData({
@@ -203,32 +152,12 @@ const TrainingData = () => {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/training/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        setSuccess('Data berhasil dihapus');
-        await fetchTrainingData();
-        
-        // Update AI service dengan data terbaru
-        try {
-          await fetch('http://localhost:8000/update-data', {
-            method: 'POST'
-          });
-        } catch (aiError) {
-          console.warn('Failed to update AI service:', aiError);
-        }
-      } else {
-        throw new Error('Failed to delete data');
-      }
+      // Simulasi API call - menggunakan data statis
+      setTrainingData(prev => prev.filter(item => item.id !== id));
+      setSuccess('Data berhasil dihapus');
     } catch (error) {
       console.error('Error deleting data:', error);
       setError('Gagal menghapus data');
-      
-      // Simulasi delete untuk demo
-      setTrainingData(prev => prev.filter(item => item.id !== id));
-      setSuccess('Data berhasil dihapus (demo mode)');
     } finally {
       setLoading(false);
     }

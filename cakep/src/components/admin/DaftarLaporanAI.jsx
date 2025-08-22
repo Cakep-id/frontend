@@ -23,27 +23,7 @@ const DaftarLaporanAI = () => {
   const loadReports = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const queryParams = new URLSearchParams();
-      
-      Object.keys(filters).forEach(key => {
-        if (filters[key]) queryParams.append(key, filters[key]);
-      });
-
-      const response = await fetch(`http://localhost:5000/api/reports?${queryParams}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setReports(data.data.reports || []);
-      } else {
-        setMessage('Error loading reports');
-      }
-    } catch (error) {
-      console.error('Error loading reports:', error);
-      setMessage('Error loading reports');
-      // Fallback to mock data for development
+      // Menggunakan data statis instead of API call
       setReports([
         {
           id: 1,
@@ -81,8 +61,29 @@ const DaftarLaporanAI = () => {
           cv_detection: [
             { label: 'filter_dirty', confidence: 0.94, bbox: { x: 50, y: 40, width: 200, height: 120 } }
           ]
+        },
+        {
+          id: 3,
+          title: 'Elevator Bergetar',
+          description: 'Elevator mengalami getaran yang tidak normal saat beroperasi',
+          severity: 'high',
+          status: 'completed',
+          asset_name: 'Elevator Passenger A',
+          asset_code: 'ELV001',
+          reporter_name: 'Bob Wilson',
+          reported_at: '2024-01-17T09:15:00Z',
+          risk_score: 0.78,
+          risk_category: 'high',
+          confidence_score: 0.91,
+          analysis_summary: 'Analisis AI menunjukkan risiko tinggi pada sistem kabel elevator.',
+          cv_detection: [
+            { label: 'cable_damage', confidence: 0.89, bbox: { x: 100, y: 50, width: 180, height: 120 } }
+          ]
         }
       ]);
+    } catch (error) {
+      console.error('Error loading reports:', error);
+      setMessage('Error loading reports');
     }
     setLoading(false);
   };
@@ -94,23 +95,13 @@ const DaftarLaporanAI = () => {
 
   const handleStatusUpdate = async (reportId, newStatus) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/reports/${reportId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setMessage('Report status updated successfully!');
-        loadReports();
-      } else {
-        setMessage('Error updating report status');
-      }
+      // Simulasi API call - menggunakan data statis
+      setReports(prev => prev.map(report => 
+        report.id === reportId 
+          ? { ...report, status: newStatus }
+          : report
+      ));
+      setMessage('Report status updated successfully!');
     } catch (error) {
       console.error('Error updating status:', error);
       setMessage('Error updating report status');

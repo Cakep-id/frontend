@@ -1,8 +1,10 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useEffect, useState } from "react";
 import { Button, Container, Nav, Navbar } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 const NavbarAdmin = () => {
+  const navigate = useNavigate();
   // Ambil preferensi tema dari localStorage atau system
   const getPreferredTheme = () => {
     const stored = typeof window !== 'undefined' ? localStorage.getItem('theme') : null;
@@ -13,6 +15,17 @@ const NavbarAdmin = () => {
 
   const [theme, setTheme] = useState(getPreferredTheme());
   const darkMode = theme === 'dark';
+
+  // Handle logout
+  const handleLogout = () => {
+    // Hapus semua login state
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userEmail');
+    navigate('/login');
+  };
 
   // Terapkan tema ke dokumen dan body
   useEffect(() => {
@@ -62,11 +75,6 @@ const NavbarAdmin = () => {
             <Nav.Link href="/admin" className="fw-medium mx-2">🏠 Home</Nav.Link>
             <Nav.Link href="/admin/daftar-laporan" className="fw-medium mx-2">📋 Reports</Nav.Link>
             <Nav.Link href="/admin/daftar-laporan-ai" className="fw-medium mx-2">🤖 AI Reports</Nav.Link>
-            <Nav.Link href="/admin/dashboard-ai" className="fw-medium mx-2">📊 AI Dashboard</Nav.Link>
-            <Nav.Link href="/admin/edit-pemeliharaan" className="fw-medium mx-2">🔧 Maintenance</Nav.Link>
-            <Nav.Link href="/admin/training-data" className="fw-medium mx-2">💬 Training Chatbot</Nav.Link>
-            <Nav.Link href="/admin/training-ai" className="fw-medium mx-2">🧠 Training AI</Nav.Link>
-            <Nav.Link href="/admin/dataset-manager" className="fw-medium mx-2">👁️ Dataset CV</Nav.Link>
             <Nav.Link href="/admin/management-pengguna" className="fw-medium mx-2">👥 Users</Nav.Link>
           </Nav>
           <div className="d-flex align-items-center gap-2 ms-3">
@@ -78,6 +86,14 @@ const NavbarAdmin = () => {
               style={{ width: 40, height: 40, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
             >
               {darkMode ? '☀️' : '🌙'}
+            </Button>
+            <Button
+              variant="outline-danger"
+              onClick={handleLogout}
+              title="Logout"
+              className="ms-2"
+            >
+              🚪 Logout
             </Button>
           </div>
         </Navbar.Collapse>

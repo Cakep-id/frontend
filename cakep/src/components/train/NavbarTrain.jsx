@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button, Container, Nav, Navbar } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-const NavbarUser = () => {
+const NavbarTrain = () => {
   const navigate = useNavigate();
   // Ambil preferensi tema dari localStorage atau system
   const getPreferredTheme = () => {
@@ -15,6 +15,17 @@ const NavbarUser = () => {
 
   const [theme, setTheme] = useState(getPreferredTheme());
   const darkMode = theme === 'dark';
+
+  // Handle logout
+  const handleLogout = () => {
+    // Hapus semua login state
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userEmail');
+    navigate('/login');
+  };
 
   // Terapkan tema ke dokumen dan body
   useEffect(() => {
@@ -46,17 +57,6 @@ const NavbarUser = () => {
     });
   };
 
-  // Fungsi logout: hapus info login (misal token) dan redirect ke root
-  const handleLogout = () => {
-    // Hapus semua login state
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem('userToken');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userEmail');
-    navigate('/login');
-  };
-
   return (
     <Navbar
       expand="lg"
@@ -66,15 +66,16 @@ const NavbarUser = () => {
       style={{ padding: "0.5rem 0", position: "fixed", width: "100%", zIndex: 1030 }}
     >
       <Container fluid className="px-4">
-        <Navbar.Brand href="/user" className="fw-bold fs-4" style={{ color: darkMode ? "#fff" : "#2d3436" }}>
-          Cakep.id
+        <Navbar.Brand href="/train" className="fw-bold fs-4" style={{ color: darkMode ? "#fff" : "#2d3436" }}>
+          🤖 Cakep.id Training
         </Navbar.Brand>
-        <Navbar.Toggle aria-controls="user-navbar" />
-        <Navbar.Collapse id="user-navbar">
+        <Navbar.Toggle aria-controls="train-navbar" />
+        <Navbar.Collapse id="train-navbar">
           <Nav className="ms-auto">
-            <Nav.Link href="/user" className="fw-medium mx-2">Home</Nav.Link>
-            <Nav.Link href="/user/buat-laporan" className="fw-medium mx-2">Buat Laporan</Nav.Link>
-            <Nav.Link href="/user/status-laporan" className="fw-medium mx-2">Status Laporan</Nav.Link>
+            <Nav.Link href="/train" className="fw-medium mx-2">🏠 Home</Nav.Link>
+            <Nav.Link href="/train/training-data" className="fw-medium mx-2">📝 Training Data</Nav.Link>
+            <Nav.Link href="/train/training-ai" className="fw-medium mx-2">🧠 Training AI</Nav.Link>
+            <Nav.Link href="/train/dataset-manager" className="fw-medium mx-2">🗂️ Dataset Manager</Nav.Link>
           </Nav>
           <div className="d-flex align-items-center gap-2 ms-3">
             <Button
@@ -101,4 +102,4 @@ const NavbarUser = () => {
   );
 };
 
-export default NavbarUser;
+export default NavbarTrain;

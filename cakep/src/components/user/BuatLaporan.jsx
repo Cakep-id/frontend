@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Button, Modal, Form, Spinner } from "react-bootstrap";
+import { Button, Form, Modal, Spinner } from "react-bootstrap";
 
 const BuatLaporan = () => {
   const [showCamera, setShowCamera] = useState(false);
@@ -22,17 +22,23 @@ const BuatLaporan = () => {
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
           setCoords({ lat, lng });
-          // Reverse geocoding pakai Nominatim (OpenStreetMap)
+          
+          // Static location mapping for demo purposes
           try {
-            const res = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-            );
-            const data = await res.json();
-            if (data.display_name) {
-              setLocation(data.display_name);
-            } else {
-              setLocation(`${lat}, ${lng}`);
-            }
+            // Simulate location lookup with static data
+            const staticLocations = [
+              "Kilang Minyak Pertamina RU IV Cilacap, Jawa Tengah",
+              "Terminal BBM Plumpang, Jakarta Utara",
+              "Depot BBM Rewulu, Yogyakarta", 
+              "Kilang Gas Bontang, Kalimantan Timur",
+              "Terminal LPG Tanjung Priok, Jakarta"
+            ];
+            
+            // Use lat/lng to determine which static location to show
+            const locationIndex = Math.floor(Math.abs(lat + lng) * 1000) % staticLocations.length;
+            const simulatedLocation = staticLocations[locationIndex];
+            
+            setLocation(`${simulatedLocation} (${lat.toFixed(6)}, ${lng.toFixed(6)})`);
           } catch {
             setLocation(`${lat}, ${lng}`);
           }

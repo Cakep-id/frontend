@@ -35,22 +35,12 @@ const Chatbot = () => {
 
   const checkAIStatus = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/chatbot/system-status', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+      // Simulasi status check - menggunakan data statis
+      setAiStatus({
+        source: 'static',
+        available: true,
+        grokAvailable: false
       });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setAiStatus({
-          source: data.data.grok_api.available ? 'grok' : 'fallback',
-          available: true,
-          grokAvailable: data.data.grok_api.available
-        });
-      }
     } catch (error) {
       console.error('Failed to check AI status:', error);
       setAiStatus({ source: 'fallback', available: false });
@@ -69,45 +59,36 @@ const Chatbot = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const context = messages.slice(-6).map(msg => ({
-        role: msg.from === 'user' ? 'user' : 'assistant',
-        content: msg.text
-      }));
+      // Simulasi API call - menggunakan response statis
+      const staticResponses = {
+        'halo': 'Halo! Saya adalah asisten AI Cakep.id. Bagaimana saya bisa membantu Anda hari ini?',
+        'bantuan': 'Saya dapat membantu Anda dengan pertanyaan seputar manajemen aset, pemeliharaan, dan analisis risiko.',
+        'fitur': 'Fitur utama Cakep.id meliputi: AI Vision untuk deteksi kerusakan, Dashboard monitoring, Jadwal pemeliharaan otomatis, dan Analisis risiko.',
+        'laporan': 'Untuk membuat laporan, silakan klik menu "Buat Laporan" di dashboard dan upload foto kerusakan yang ingin dilaporkan.',
+        'default': 'Terima kasih atas pertanyaan Anda. Saya akan mencoba membantu sebaik mungkin dengan informasi yang tersedia.'
+      };
 
-      const response = await fetch('http://localhost:5000/api/chatbot/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          message: text,
-          conversation_id: conversationId,
-          context: context
-        })
-      });
+      // Find matching response
+      const normalizedText = text.toLowerCase();
+      const responseKey = Object.keys(staticResponses).find(key => 
+        key !== 'default' && normalizedText.includes(key)
+      );
+      const responseText = staticResponses[responseKey] || staticResponses.default;
 
-      const data = await response.json();
-      
-      if (data.success) {
-        const botMessage = {
-          from: "bot",
-          text: data.data.response,
-          confidence: data.data.confidence,
-          source: data.data.source,
-          timestamp: data.data.timestamp
-        };
-        setMessages((m) => [...m, botMessage]);
+      const botMessage = {
+        from: "bot",
+        text: responseText,
+        confidence: 0.95,
+        source: 'static',
+        timestamp: new Date().toISOString()
+      };
+      setMessages((m) => [...m, botMessage]);
         
-        // Update AI status based on response
-        setAiStatus(prev => ({
-          ...prev,
-          source: data.data.source
-        }));
-      } else {
-        throw new Error(data.message || 'Failed to get response');
-      }
+      // Update AI status based on response
+      setAiStatus(prev => ({
+        ...prev,
+        source: 'static'
+      }));
     } catch (error) {
       console.error('Chatbot error:', error);
       const errorMessage = {

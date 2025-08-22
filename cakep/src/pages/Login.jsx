@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { Container, Form, Button, Modal } from "react-bootstrap";
-import { FaUser, FaLock, FaEnvelope, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { Button, Container, Form, Modal } from "react-bootstrap";
+import { FaCheckCircle, FaEnvelope, FaLock, FaTimesCircle, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import factoryLeft from "../assets/login/login.png";
 import factoryRight from "../assets/login/daftar.png";
+import factoryLeft from "../assets/login/login.png";
 
 const getPreferredTheme = () => {
   const stored = typeof window !== 'undefined' ? localStorage.getItem('theme') : null;
@@ -40,6 +40,22 @@ const Login = () => {
     document.body.classList.toggle('text-dark', theme === 'light');
   }, [theme]);
 
+  // Check jika user sudah login
+  useEffect(() => {
+    const userToken = localStorage.getItem('userToken');
+    const userRole = localStorage.getItem('userRole');
+    
+    if (userToken && userRole) {
+      if (userRole === 'admin') {
+        navigate("/admin");
+      } else if (userRole === 'user') {
+        navigate("/user");
+      } else if (userRole === 'train') {
+        navigate("/train");
+      }
+    }
+  }, [navigate]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isSignup) {
@@ -53,11 +69,31 @@ const Login = () => {
     const email = e.target.email.value;
     const password = e.target.password.value;
     if (email === "admin@gmail.com" && password === "admin") {
+      // Simpan login state untuk admin
+      localStorage.setItem('userToken', 'admin_token_' + Date.now());
+      localStorage.setItem('userRole', 'admin');
+      localStorage.setItem('userEmail', email);
+      
       setModalMsg("Login berhasil! Anda akan diarahkan ke halaman admin.");
       setModalType("login");
       setShowModal(true);
       setTimeout(() => navigate("/admin"), 1200);
+    } else if (email === "train@gmail.com" && password === "train") {
+      // Simpan login state untuk trainer
+      localStorage.setItem('userToken', 'train_token_' + Date.now());
+      localStorage.setItem('userRole', 'train');
+      localStorage.setItem('userEmail', email);
+      
+      setModalMsg("Login berhasil! Anda akan diarahkan ke halaman training.");
+      setModalType("login");
+      setShowModal(true);
+      setTimeout(() => navigate("/train"), 1200);
     } else if (email === "user@gmail.com" && password === "user") {
+      // Simpan login state untuk user
+      localStorage.setItem('userToken', 'user_token_' + Date.now());
+      localStorage.setItem('userRole', 'user');
+      localStorage.setItem('userEmail', email);
+      
       setModalMsg("Login berhasil! Anda akan diarahkan ke halaman user.");
       setModalType("login");
       setShowModal(true);
