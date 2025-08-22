@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Badge, Button, Dropdown, Form, InputGroup, Spinner } from "react-bootstrap";
-import { FaBars, FaCopy, FaExclamationTriangle, FaPaperPlane, FaPlus, FaRobot, FaTimes, FaTrash, FaUser } from "react-icons/fa";
+import { FaBars, FaBrain, FaCopy, FaExclamationTriangle, FaPaperPlane, FaPlus, FaTimes, FaTrash, FaUser } from "react-icons/fa";
 
 const ChatbotUser = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -8,7 +8,7 @@ const ChatbotUser = () => {
     {
       id: 1,
       from: "bot",
-      text: "Selamat datang di chatbot Cakep.id! Saya adalah asisten AI yang siap membantu Anda dengan berbagai pertanyaan teknis mengenai platform ini. Silahkan tanya apapun yang ingin Anda ketahui!",
+      text: "🤖 Selamat datang di CAKEP AI Assistant powered by Grok! Saya adalah asisten AI yang siap membantu Anda dengan berbagai pertanyaan tentang manajemen aset, maintenance, dan troubleshooting. Saya dapat membantu dengan:\n\n• Analisis kerusakan aset\n• Rekomendasi maintenance\n• Troubleshooting masalah teknis\n• Panduan operasional\n\nSilahkan tanya apapun yang ingin Anda ketahui!",
       timestamp: new Date(),
       confidence: 1.0,
       source: "system"
@@ -17,17 +17,19 @@ const ChatbotUser = () => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [conversationId, setConversationId] = useState(null);
+  const [aiStatus, setAiStatus] = useState({ source: 'grok', available: true });
   const [chatHistory, setChatHistory] = useState([
     { 
       id: 1, 
       title: "Chat Baru", 
-      lastMessage: "Selamat datang di chatbot...",
+      lastMessage: "Selamat datang di CAKEP AI Assistant...",
       category: "assistant",
       messages: [
         {
           id: 1,
           from: "bot",
-          text: "Selamat datang di chatbot Cakep.id! Saya adalah asisten AI yang siap membantu Anda dengan berbagai pertanyaan teknis mengenai platform ini. Silahkan tanya apapun yang ingin Anda ketahui!",
+          text: "🤖 Selamat datang di CAKEP AI Assistant powered by Grok! Saya adalah asisten AI yang siap membantu Anda dengan berbagai pertanyaan tentang manajemen aset, maintenance, dan troubleshooting.",
           timestamp: new Date(),
           confidence: 1.0,
           source: "system"
@@ -110,37 +112,71 @@ const ChatbotUser = () => {
     }
 
     try {
-      // Call backend API
-      const response = await fetch('http://localhost:3001/api/chat', {
+      // Generate conversation ID if not exists
+      if (!conversationId) {
+        const newConversationId = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        setConversationId(newConversationId);
+      }
+
+      // Prepare context from recent messages
+      const context = messages.slice(-6).map(msg => ({
+        role: msg.from === 'user' ? 'user' : 'assistant',
+        content: msg.text
+      }));
+
+      // Call enhanced backend API with Grok integration
+      const token = localStorage.getItem('token');
+      const endpoint = chatMode === 'faq' ? '/api/chatbot/faq' : '/api/chatbot/chat';
+      
+      const response = await fetch(`http://localhost:5000${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          message: text,
-          category: chatMode
-        })
+        body: JSON.stringify(
+          chatMode === 'faq' 
+            ? { question: text }
+            : { 
+                message: text, 
+                conversation_id: conversationId,
+                context: context
+              }
+        )
       });
 
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
+        throw new Error(`API Error: ${response.status} - ${response.statusText}`);
       }
 
       const data = await response.json();
       
+      if (!data.success) {
+        throw new Error(data.message || 'API call failed');
+      }
+
+      const responseData = data.data;
       const botMessage = {
         id: Date.now() + 1,
         from: "bot",
-        text: data.response,
-        timestamp: new Date(),
-        confidence: data.confidence || 0,
-        source: data.source || 'api',
-        matchedQuestion: data.matched_question,
-        dataId: data.data_id
+        text: chatMode === 'faq' ? responseData.answer : responseData.response,
+        timestamp: new Date(responseData.timestamp),
+        confidence: responseData.confidence || 0,
+        source: responseData.source || 'api'
       };
       
       const finalMessages = [...updatedMessages, botMessage];
       setMessages(finalMessages);
+
+      // Update AI status
+      setAiStatus(prev => ({
+        ...prev,
+        source: responseData.source,
+        available: true
+      }));
+
+      // Clear any previous errors
+      setApiError(null);
 
       // Update chat history with bot response
       setChatHistory(prev => 
@@ -155,8 +191,28 @@ const ChatbotUser = () => {
       console.error('Chat API Error:', error);
       setApiError(error.message);
       
-      // Fallback to static response
-      const fallbackResponse = getFallbackResponse(text);
+      // Update AI status to indicate error
+      setAiStatus(prev => ({
+        ...prev,
+        available: false,
+        source: 'error'
+      }));
+      
+      // Enhanced fallback response with error context
+      const fallbackResponse = `🚨 Maaf, saya mengalami gangguan koneksi dengan sistem AI. 
+
+Kemungkinan penyebab:
+• Server AI sedang maintenance
+• Koneksi internet tidak stabil
+• API key tidak valid
+
+Sementara itu, berikut beberapa tips umum:
+• Untuk masalah maintenance: Periksa jadwal rutin dan lakukan inspeksi berkala
+• Untuk troubleshooting: Dokumentasikan gejala dengan detail dan foto
+• Untuk emergency: Hubungi teknisi segera
+
+Silakan coba lagi dalam beberapa menit atau hubungi support teknis kami.`;
+
       const botMessage = {
         id: Date.now() + 1,
         from: "bot",
@@ -333,9 +389,9 @@ const ChatbotUser = () => {
             e.target.style.transform = "scale(1)";
             e.target.style.boxShadow = "0 4px 15px rgba(0,0,0,0.2)";
           }}
-          title="Buka Chat AI"
+          title={`Buka CAKEP AI Chat (${aiStatus.source === 'grok' ? 'Grok AI' : 'Fallback Mode'})`}
         >
-          <FaRobot size={24} color="white" />
+          <FaBrain size={24} color="white" />
         </Button>
       )}
 
@@ -364,17 +420,27 @@ const ChatbotUser = () => {
         <div className="p-3 border-bottom">
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h5 className="mb-0 fw-bold">
-              <FaRobot className="me-2" />
-              Asisten AI
+              <FaBrain className="me-2" />
+              CAKEP AI Assistant
             </h5>
-            <Button
-              variant="outline-primary"
-              size="sm"
-              onClick={newChat}
-              title="Chat Baru"
-            >
-              <FaPlus />
-            </Button>
+            <div className="d-flex align-items-center gap-2">
+              <Badge 
+                bg={aiStatus.source === 'grok_api' ? 'success' : 
+                    aiStatus.source === 'error' ? 'danger' : 'warning'}
+                size="sm"
+              >
+                {aiStatus.source === 'grok_api' ? '🧠 Grok AI' : 
+                 aiStatus.source === 'error' ? '❌ Error' : '🔄 Fallback'}
+              </Badge>
+              <Button
+                variant="outline-primary"
+                size="sm"
+                onClick={newChat}
+                title="Chat Baru"
+              >
+                <FaPlus />
+              </Button>
+            </div>
           </div>
           
           <Button
@@ -526,7 +592,7 @@ const ChatbotUser = () => {
                       }`}
                       style={{ width: "32px", height: "32px", flexShrink: 0 }}
                     >
-                      {message.from === 'user' ? <FaUser size={14} /> : <FaRobot size={14} />}
+                      {message.from === 'user' ? <FaUser size={14} /> : <FaBrain size={14} />}
                     </div>
 
                     {/* Message Content */}
@@ -538,20 +604,40 @@ const ChatbotUser = () => {
                         <small className="text-muted">
                           {formatTime(message.timestamp)}
                         </small>
-                        {/* Confidence indicator for bot messages */}
-                        {message.from === 'bot' && message.confidence !== undefined && (
-                          <Badge 
-                            bg={
-                              message.confidence >= 0.8 ? 'success' : 
-                              message.confidence >= 0.5 ? 'warning' : 'secondary'
-                            }
-                            className="small"
-                          >
-                            {message.source === 'knowledge_base' && `${(message.confidence * 100).toFixed(0)}%`}
-                            {message.source === 'fallback' && 'Fallback'}
-                            {message.source === 'system' && 'System'}
-                            {message.source === 'api' && 'API'}
-                          </Badge>
+                        {/* Enhanced AI indicators for bot messages */}
+                        {message.from === 'bot' && (
+                          <div className="d-flex align-items-center gap-1">
+                            {/* Source indicator */}
+                            <Badge 
+                              bg={
+                                message.source === 'grok_api' ? 'success' : 
+                                message.source === 'training_data' ? 'info' :
+                                message.source === 'fallback' ? 'warning' : 
+                                message.source === 'error' ? 'danger' : 'secondary'
+                              }
+                              size="sm"
+                            >
+                              {message.source === 'grok_api' && '🧠 Grok AI'}
+                              {message.source === 'training_data' && '📚 Training'}
+                              {message.source === 'fallback' && '🔄 Fallback'}
+                              {message.source === 'error' && '❌ Error'}
+                              {message.source === 'system' && '⚙️ System'}
+                              {!message.source && '❓ Unknown'}
+                            </Badge>
+                            
+                            {/* Confidence indicator */}
+                            {message.confidence !== undefined && message.confidence > 0 && (
+                              <Badge 
+                                bg={
+                                  message.confidence >= 0.8 ? 'success' : 
+                                  message.confidence >= 0.6 ? 'warning' : 'danger'
+                                }
+                                size="sm"
+                              >
+                                {Math.round(message.confidence * 100)}%
+                              </Badge>
+                            )}
+                          </div>
                         )}
                       </div>
                       

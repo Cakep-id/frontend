@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Badge, Button, Card, Form, Modal, Table } from "react-bootstrap";
+import { Badge, Button, Card, Col, Form, Modal, Row, Table } from "react-bootstrap";
 
 const DaftarLaporan = () => {
-  // Data dummy laporan untuk admin
+  // Data dummy laporan untuk admin dengan enhanced AI integration
   const [laporanList, setLaporanList] = useState([
     {
       id: 1,
@@ -15,13 +15,23 @@ const DaftarLaporan = () => {
       deskripsi: "Mesin conveyor mengalami masalah pada bagian sabuk yang sudah mulai kendor",
       pelapor: "John Doe",
       prioritas: "high",
+      riskScore: 0.89,
+      riskCategory: "high",
+      confidenceScore: 0.94,
+      aiAnalysis: "AI mendeteksi kerusakan KRITIS pada sabuk conveyor dengan confidence 94%. Risk assessment: HIGH (89%). Deteksi: belt_loose, vibration_abnormal. Rekomendasi: SEGERA lakukan penggantian sabuk dalam 24 jam.",
+      cvDetections: [
+        { label: "belt_loose", confidence: 0.89, bbox: { x: 120, y: 80, width: 150, height: 100 } },
+        { label: "vibration_abnormal", confidence: 0.82, bbox: { x: 200, y: 150, width: 80, height: 60 } }
+      ],
+      maintenanceRecommendation: "Scheduled maintenance: Belt replacement + bearing inspection",
+      estimatedCost: "Rp 2,500,000",
+      urgencyLevel: "critical",
       riwayat: [
         { tanggal: "2024-01-10", tindakan: "Penggantian sabuk conveyor" },
         { tanggal: "2024-03-15", tindakan: "Pembersihan rutin" },
       ],
       tempat: "Pabrik A - Lantai 1",
-      prosedur: "Matikan mesin, lepas sabuk lama, pasang sabuk baru, cek kelancaran.",
-      aiAnalysis: "AI mendeteksi kerusakan pada sabuk conveyor dengan tingkat kepercayaan 89%. Rekomendasi: penggantian sabuk segera."
+      prosedur: "Matikan mesin, lepas sabuk lama, pasang sabuk baru, cek kelancaran."
     },
     {
       id: 2,
@@ -34,13 +44,23 @@ const DaftarLaporan = () => {
       deskripsi: "Panel listrik menunjukkan indikator warning pada MCB utama",
       pelapor: "Jane Smith",
       prioritas: "medium",
+      riskScore: 0.65,
+      riskCategory: "medium",
+      confidenceScore: 0.91,
+      aiAnalysis: "AI mengidentifikasi masalah SEDANG pada MCB dengan confidence 91%. Risk assessment: MEDIUM (65%). Deteksi: mcb_warning, heat_signature. Status: APPROVED untuk perbaikan.",
+      cvDetections: [
+        { label: "mcb_warning", confidence: 0.91, bbox: { x: 50, y: 40, width: 100, height: 80 } },
+        { label: "heat_signature", confidence: 0.73, bbox: { x: 80, y: 120, width: 60, height: 40 } }
+      ],
+      maintenanceRecommendation: "MCB replacement + thermal inspection",
+      estimatedCost: "Rp 1,200,000",
+      urgencyLevel: "moderate",
       riwayat: [
         { tanggal: "2024-02-20", tindakan: "Penggantian MCB" },
         { tanggal: "2024-04-01", tindakan: "Pengecekan kabel" },
       ],
       tempat: "Pabrik B - Ruang Panel",
-      prosedur: "Pastikan tidak ada arus, buka panel, cek MCB, ganti jika perlu.",
-      aiAnalysis: "AI mengidentifikasi masalah pada MCB dengan akurasi 94%. Status: Approved untuk tindakan perbaikan."
+      prosedur: "Pastikan tidak ada arus, buka panel, cek MCB, ganti jika perlu."
     },
     {
       id: 3,
@@ -53,13 +73,20 @@ const DaftarLaporan = () => {
       deskripsi: "Forklift mengalami penurunan performa dan suara tidak normal pada mesin",
       pelapor: "Mike Johnson",
       prioritas: "low",
+      riskScore: null,
+      riskCategory: "pending",
+      confidenceScore: null,
+      aiAnalysis: "⏳ Sedang dalam proses analisis AI... Estimasi selesai dalam 5 menit.",
+      cvDetections: [],
+      maintenanceRecommendation: "Pending AI analysis",
+      estimatedCost: "TBD",
+      urgencyLevel: "low",
       riwayat: [
         { tanggal: "2024-03-05", tindakan: "Penggantian oli" },
         { tanggal: "2024-05-10", tindakan: "Pengecekan rem" },
       ],
       tempat: "Gudang Utama",
-      prosedur: "Parkir di area servis, cek oli, ganti oli, cek rem.",
-      aiAnalysis: "Sedang dalam proses analisis AI..."
+      prosedur: "Parkir di area servis, cek oli, ganti oli, cek rem."
     },
     {
       id: 4,
@@ -72,6 +99,17 @@ const DaftarLaporan = () => {
       deskripsi: "Kompresor udara telah diperbaiki dan berfungsi normal kembali",
       pelapor: "Sarah Wilson",
       prioritas: "medium",
+      riskScore: 0.35,
+      riskCategory: "low",
+      confidenceScore: 0.87,
+      aiAnalysis: "AI mengkonfirmasi perbaikan BERHASIL dengan confidence 87%. Risk assessment: LOW (35%). Status: COMPLETED. Prediksi maintenance berikutnya: 3 bulan.",
+      cvDetections: [
+        { label: "normal_operation", confidence: 0.87, bbox: { x: 100, y: 60, width: 180, height: 120 } },
+        { label: "pressure_optimal", confidence: 0.93, bbox: { x: 200, y: 80, width: 80, height: 60 } }
+      ],
+      maintenanceRecommendation: "Routine maintenance in 3 months",
+      estimatedCost: "Rp 0 (Completed)",
+      urgencyLevel: "none",
       riwayat: [
         { tanggal: "2024-04-15", tindakan: "Service berkala" },
         { tanggal: "2024-06-20", tindakan: "Penggantian filter" },
@@ -283,8 +321,9 @@ const DaftarLaporan = () => {
                     <th>Asset</th>
                     <th>Pelapor</th>
                     <th>Tanggal</th>
-                    <th>AI Detection</th>
-                    <th>Risk Level</th>
+                    <th>🤖 AI Analysis</th>
+                    <th>Risk Score</th>
+                    <th>CV Detection</th>
                     <th>Status</th>
                     <th>Aksi</th>
                   </tr>
@@ -310,25 +349,58 @@ const DaftarLaporan = () => {
                       <td>{formatTanggal(laporan.tanggal)}</td>
                       <td>
                         {laporan.aiDetected ? (
-                          <Badge bg="success">
-                            🤖 Terdeteksi AI
-                          </Badge>
+                          <div>
+                            <Badge bg="success" className="mb-1">
+                              ✅ AI Analyzed
+                            </Badge>
+                            {laporan.confidenceScore && (
+                              <div>
+                                <small className="text-muted">
+                                  Confidence: {Math.round(laporan.confidenceScore * 100)}%
+                                </small>
+                              </div>
+                            )}
+                          </div>
                         ) : (
-                          <Badge bg="warning">
-                            ⏳ Proses AI
-                          </Badge>
+                          <Badge bg="warning">⏳ Processing</Badge>
                         )}
                       </td>
                       <td>
-                        <Badge 
-                          style={{ 
-                            backgroundColor: riskConfig[laporan.prioritas].bgColor,
-                            color: riskConfig[laporan.prioritas].color,
-                            border: 'none'
-                          }}
-                        >
-                          {riskConfig[laporan.prioritas].label}
-                        </Badge>
+                        {laporan.riskScore ? (
+                          <div>
+                            <Badge 
+                              bg={laporan.riskCategory === 'high' ? 'danger' : 
+                                  laporan.riskCategory === 'medium' ? 'warning' : 'success'}
+                              className="mb-1"
+                            >
+                              {laporan.riskCategory?.toUpperCase()}
+                            </Badge>
+                            <div>
+                              <small className="text-muted">
+                                {Math.round(laporan.riskScore * 100)}%
+                              </small>
+                            </div>
+                          </div>
+                        ) : (
+                          <Badge bg="secondary">Pending</Badge>
+                        )}
+                      </td>
+                      <td>
+                        {laporan.cvDetections && laporan.cvDetections.length > 0 ? (
+                          <div>
+                            <Badge bg="info" className="mb-1">
+                              👁️ {laporan.cvDetections.length} detections
+                            </Badge>
+                            <div>
+                              <small className="text-muted">
+                                {laporan.cvDetections[0].label.replace('_', ' ')}
+                                {laporan.cvDetections.length > 1 && ' +more'}
+                              </small>
+                            </div>
+                          </div>
+                        ) : (
+                          <Badge bg="secondary">No CV data</Badge>
+                        )}
                       </td>
                       <td>
                         {laporan.approved ? (
@@ -414,6 +486,13 @@ const DaftarLaporan = () => {
                     onClick={() => setActiveTab("prosedur")}
                   >
                     Prosedur
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn ${activeTab === "ai-analysis" ? "btn-primary" : isDark ? "btn-outline-light" : "btn-outline-primary"}`}
+                    onClick={() => setActiveTab("ai-analysis")}
+                  >
+                    🤖 AI Analysis
                   </button>
                 </div>
               </div>
@@ -543,6 +622,133 @@ const DaftarLaporan = () => {
                     <h6 className="fw-bold">Langkah-langkah:</h6>
                     <p className="mb-0">{selectedLaporan.prosedur}</p>
                   </div>
+                </div>
+              )}
+
+              {activeTab === "ai-analysis" && (
+                <div>
+                  <h6 className="fw-bold mb-3">🤖 AI Analysis & Recommendations</h6>
+                  
+                  {/* AI Analysis Summary */}
+                  <Card className={`mb-3 ${isDark ? 'bg-secondary' : 'bg-light'}`}>
+                    <Card.Body>
+                      <h6 className="fw-bold mb-2">Analysis Summary</h6>
+                      <p className="mb-0">{selectedLaporan.aiAnalysis}</p>
+                    </Card.Body>
+                  </Card>
+
+                  {/* Risk Assessment */}
+                  {selectedLaporan.riskScore && (
+                    <Row className="mb-3">
+                      <Col md={4}>
+                        <Card className={`text-center ${isDark ? 'bg-dark border-secondary' : 'bg-white'}`}>
+                          <Card.Body>
+                            <h5 className="text-danger">{Math.round(selectedLaporan.riskScore * 100)}%</h5>
+                            <small>Risk Score</small>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                      <Col md={4}>
+                        <Card className={`text-center ${isDark ? 'bg-dark border-secondary' : 'bg-white'}`}>
+                          <Card.Body>
+                            <Badge 
+                              bg={selectedLaporan.riskCategory === 'high' ? 'danger' : 
+                                  selectedLaporan.riskCategory === 'medium' ? 'warning' : 'success'}
+                              className="h6"
+                            >
+                              {selectedLaporan.riskCategory?.toUpperCase()}
+                            </Badge>
+                            <div><small>Risk Category</small></div>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                      <Col md={4}>
+                        <Card className={`text-center ${isDark ? 'bg-dark border-secondary' : 'bg-white'}`}>
+                          <Card.Body>
+                            <h5 className="text-success">{Math.round(selectedLaporan.confidenceScore * 100)}%</h5>
+                            <small>AI Confidence</small>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    </Row>
+                  )}
+
+                  {/* Computer Vision Detections */}
+                  {selectedLaporan.cvDetections && selectedLaporan.cvDetections.length > 0 && (
+                    <Card className={`mb-3 ${isDark ? 'bg-secondary' : 'bg-light'}`}>
+                      <Card.Body>
+                        <h6 className="fw-bold mb-3">👁️ Computer Vision Detection Results</h6>
+                        <Table size="sm" className={isDark ? 'table-dark' : ''}>
+                          <thead>
+                            <tr>
+                              <th>Detection Type</th>
+                              <th>Confidence</th>
+                              <th>Location (x, y, w, h)</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedLaporan.cvDetections.map((detection, index) => (
+                              <tr key={index}>
+                                <td>
+                                  <Badge bg="info">{detection.label.replace('_', ' ')}</Badge>
+                                </td>
+                                <td>{Math.round(detection.confidence * 100)}%</td>
+                                <td>
+                                  ({detection.bbox.x}, {detection.bbox.y}, {detection.bbox.width}, {detection.bbox.height})
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </Card.Body>
+                    </Card>
+                  )}
+
+                  {/* Maintenance Recommendations */}
+                  {selectedLaporan.maintenanceRecommendation && (
+                    <Card className={`mb-3 ${isDark ? 'bg-secondary' : 'bg-light'}`}>
+                      <Card.Body>
+                        <h6 className="fw-bold mb-2">🔧 Maintenance Recommendation</h6>
+                        <p className="mb-2">{selectedLaporan.maintenanceRecommendation}</p>
+                        
+                        <Row>
+                          <Col md={6}>
+                            <strong>Estimated Cost:</strong> {selectedLaporan.estimatedCost}
+                          </Col>
+                          <Col md={6}>
+                            <strong>Urgency Level:</strong> 
+                            <Badge 
+                              bg={selectedLaporan.urgencyLevel === 'critical' ? 'danger' : 
+                                  selectedLaporan.urgencyLevel === 'moderate' ? 'warning' : 
+                                  selectedLaporan.urgencyLevel === 'low' ? 'info' : 'success'}
+                              className="ms-2"
+                            >
+                              {selectedLaporan.urgencyLevel}
+                            </Badge>
+                          </Col>
+                        </Row>
+                      </Card.Body>
+                    </Card>
+                  )}
+
+                  {/* AI Training Feedback */}
+                  <Card className={`${isDark ? 'bg-secondary' : 'bg-light'}`}>
+                    <Card.Body>
+                      <h6 className="fw-bold mb-2">🎯 Feedback for AI Training</h6>
+                      <p className="text-muted mb-2">Help improve AI accuracy by providing feedback on this analysis:</p>
+                      <div className="d-flex gap-2">
+                        <Button size="sm" variant="success">
+                          👍 Accurate Analysis
+                        </Button>
+                        <Button size="sm" variant="warning">
+                          ⚠️ Partially Correct
+                        </Button>
+                        <Button size="sm" variant="danger">
+                          👎 Incorrect Analysis
+                        </Button>
+                      </div>
+                    </Card.Body>
+                  </Card>
                 </div>
               )}
             </>

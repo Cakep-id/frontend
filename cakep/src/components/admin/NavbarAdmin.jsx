@@ -59,11 +59,15 @@ const NavbarAdmin = () => {
         <Navbar.Toggle aria-controls="admin-navbar" />
         <Navbar.Collapse id="admin-navbar">
           <Nav className="ms-auto">
-            <Nav.Link href="/admin" className="fw-medium mx-2">Home</Nav.Link>
-            <Nav.Link href="/admin/daftar-laporan" className="fw-medium mx-2">Daftar Laporan</Nav.Link>
-            <Nav.Link href="/admin/edit-pemeliharaan" className="fw-medium mx-2">Edit Pemeliharaan</Nav.Link>
-            <Nav.Link href="/admin/training-data" className="fw-medium mx-2">Training Data</Nav.Link>
-            <Nav.Link href="/admin/management-pengguna" className="fw-medium mx-2">Management Pengguna</Nav.Link>
+            <Nav.Link href="/admin" className="fw-medium mx-2">🏠 Home</Nav.Link>
+            <Nav.Link href="/admin/daftar-laporan" className="fw-medium mx-2">📋 Reports</Nav.Link>
+            <Nav.Link href="/admin/daftar-laporan-ai" className="fw-medium mx-2">🤖 AI Reports</Nav.Link>
+            <Nav.Link href="/admin/dashboard-ai" className="fw-medium mx-2">📊 AI Dashboard</Nav.Link>
+            <Nav.Link href="/admin/edit-pemeliharaan" className="fw-medium mx-2">🔧 Maintenance</Nav.Link>
+            <Nav.Link href="/admin/training-data" className="fw-medium mx-2">💬 Training Chatbot</Nav.Link>
+            <Nav.Link href="/admin/training-ai" className="fw-medium mx-2">🧠 Training AI</Nav.Link>
+            <Nav.Link href="/admin/dataset-manager" className="fw-medium mx-2">👁️ Dataset CV</Nav.Link>
+            <Nav.Link href="/admin/management-pengguna" className="fw-medium mx-2">👥 Users</Nav.Link>
           </Nav>
           <div className="d-flex align-items-center gap-2 ms-3">
             <Button
